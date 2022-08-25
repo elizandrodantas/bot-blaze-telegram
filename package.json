@@ -1,0 +1,24 @@
+{
+  "name": "bot-blaze-telegram",
+  "version": "0.1.0",
+  "author": "Elizandro Dantas <dantaspm@icloud.com>",
+  "main": "src/index.mjs",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "start": "node src/index.mjs",
+    "dev": "node __test__/bot.test.mjs"
+  },
+  "dependencies": {
+    "chalk": "^5.0.1",
+    "express": "^4.18.1",
+    "figlet": "^1.5.2",
+    "gradient-string": "^2.0.1",
+    "ora": "^6.1.2",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6",
+    "telegraf": "^4.8.6",
+    "ws": "^8.8.1",
+    "dotenv": "^16.0.1"
+  }
+}
