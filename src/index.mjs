@@ -19,14 +19,14 @@ const app = express();
 app.get('/', (request, response) => response.status(200).json({ info: "bot blaze with telegram, by: Elizandro Dantas" }));
 
 async function start(){
-    let appOra = ora('iniciando client http').start(),
+    let appOra = ora('Iniciando servidor').start(),
         controllerBot = new BotBlazeWithTelegram(),
-        server;
+        server, port = process.env.PORT || 3000;
 
     try{
-        server = app.listen(process.env.PORT || 3000, () => appOra.succeed('client http escultando a porta', process.env.PORT || 3000));
+        server = app.listen(port, () => appOra.succeed('O servidor está em execução na porta: ' + port));
     }catch(err){
-        appOra.fail("erro ao iniciar client http");
+        appOra.fail("Erro ao iniciar servidor");
         process.exit();
     }
 

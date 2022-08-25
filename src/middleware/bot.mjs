@@ -1,7 +1,7 @@
 import { Analise, BlazeCore, Telegram } from '../core/index.mjs';
 import chalk from 'chalk';
 
-const { ID_GROUP_MESSAGE } = process.env;
+const { ID_GROUP_MESSAGE, SAFE_AFTER_LOSS } = process.env;
 
 /**
  * @class
@@ -127,7 +127,14 @@ BotBlazeWithTelegram.prototype.invokeResult = async function(data){
                 this._updateBet("gale-2");
             }else{
                 await this.telegram.sendResult("loss", ID_GROUP_MESSAGE, { colorBet: this.bet.color, colorLast: color}, true);
-                this._resetBet();
+                
+                if(SAFE_AFTER_LOSS){
+                    this._updateBet("safe", true, null, null, null);
+                    this._timeNextBetSafe(3);
+                    await this.telegram.send(`⏱ ANALISANDO RESULTADOS`, ID_GROUP_MESSAGE);
+                }else{
+                    this._resetBet();
+                }
             }
         }
     }
@@ -176,7 +183,7 @@ BotBlazeWithTelegram.prototype._resetBet = function(){
 /**
  * atualiza dados da jogada
  * 
- * @param {"bet" | "gale-1" | "gale-2"} phase 
+ * @param {"bet" | "gale-1" | "gale-2" | "safe"} phase 
  * @param {boolean} jump 
  * @param {number} color 
  * @param {number} roll 
@@ -190,4 +197,21 @@ BotBlazeWithTelegram.prototype._updateBet = function(phase, jump, color, roll, i
     if(typeof color !== "undefined") this.bet.color = color;
     if(typeof roll !== "undefined") this.bet.roll = roll;
     if(typeof id !== "undefined") this.bet.id = id;
+}
+
+/**
+ * tempo de segurança, apos loss, para analisar novos resultados
+ * 
+ * @method _timeNextBetSafe
+ * @memberof BotBlazeWithTelegram
+ * @instance
+ * @param {number} minute - minutos de pause
+ * @returns {void}
+ * @api private
+ */
+
+BotBlazeWithTelegram.prototype._timeNextBetSafe = function(minute = Math.floor((Math.random() * 3) + 1)){
+    setTimeout(() => {
+        this._resetBet();
+    }, 6e4 * minute);
 }

@@ -4,6 +4,7 @@ import { Telegraf } from 'telegraf';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
+import { EnvironmentVariablesError } from '../error/index.mjs';
  
 const { BOT_TOKEN, REF } = process.env,
     __filename = fileURLToPath(import.meta.url),
@@ -25,6 +26,9 @@ const { BOT_TOKEN, REF } = process.env,
  */
 
 export function Telegram(){
+    if(!BOT_TOKEN)
+        throw new EnvironmentVariablesError("BOT_TOKEN");
+
     /** @type {"pause" | "on"} */
     this.status = "pause";
     /** @type {Telegraf} */
@@ -51,7 +55,9 @@ Telegram.prototype.start = async function(){
         startingOra.succeed("bot iniciado com sucesso");
 
         this.client.use(async (ctx, next) => {
-            let { chat } = ctx, { id } = chat;
+            // let { chat } = ctx, {  } = chat;
+            console.log(ctx);
+            return next();
         });
 
         process.once("SIGINT", () => this.client.stop("SIGINT"));

@@ -2,6 +2,8 @@ import event from 'node:events';
 import ws from 'ws';
 import request from 'request-promise';
 
+import { EnvironmentVariablesError } from '../error/index.mjs';
+
 const { URL_BLAZE, BASE_URL } = process.env;
 
 /**
@@ -79,6 +81,9 @@ export function BlazeCore(){
  */
 
 BlazeCore.prototype.start = function(){
+    if(!URL_BLAZE || !BASE_URL)
+        throw new EnvironmentVariablesError("URL BLAZE or BASE_URL");
+
     let [ param0 ] = arguments;
 
     if(typeof param0 !== "object") param0 = {}
