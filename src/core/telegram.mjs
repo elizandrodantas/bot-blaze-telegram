@@ -186,7 +186,6 @@ Telegram.prototype.sendSticker = async function(filename, clientId){
             return { status: "error", message: "chat id deve ser uma string ou um array de string" } 
         }
     }catch(err){
-        console.log(err)
         return { status: "error", message: "erro ao enviar sticker" }
     }
 
