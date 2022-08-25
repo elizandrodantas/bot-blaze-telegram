@@ -34,6 +34,15 @@ export function Telegram(){
     /** @type {Telegraf} */
     this.client = new Telegraf(BOT_TOKEN);
 
+    this.messageInfoBot = [
+        "🤖 <b>Bot Info:</b> \n",
+        `<b>Author:</b> Elizandro Dantas`,
+        `<b>Telegram:</b> <a href="tg://user?id=1321348593">@elizandrodantas</a>`,
+        `<b>Instagram:</b> <a href="https://www.instagram.com/elizandrodantas/">@elizandrodantas</a>`,
+        "\n",
+        "🔭 Aproveite todos meus serviços nos canais."
+    ];
+
 }
 
 /**
@@ -55,9 +64,16 @@ Telegram.prototype.start = async function(){
         startingOra.succeed("bot iniciado com sucesso");
 
         this.client.use(async (ctx, next) => {
-            // let { chat } = ctx, {  } = chat;
-            console.log(ctx);
-            return next();
+            let { type, id } = await ctx.getChat();
+
+            if(type === "private"){
+                await ctx.deleteMessage();
+                await ctx.telegram.sendMessage(id, `⚠️ Não é possivel enviar mensagem privada`);
+                await ctx.telegram.sendMessage(id, this.messageInfoBot.join('\n'), { parse_mode: "HTML" });
+                return ;
+            }
+            
+            return ;
         });
 
         process.once("SIGINT", () => this.client.stop("SIGINT"));
@@ -170,6 +186,7 @@ Telegram.prototype.sendSticker = async function(filename, clientId){
             return { status: "error", message: "chat id deve ser uma string ou um array de string" } 
         }
     }catch(err){
+        console.log(err)
         return { status: "error", message: "erro ao enviar sticker" }
     }
 
