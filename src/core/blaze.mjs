@@ -4,8 +4,6 @@ import request from 'request-promise';
 
 import { EnvironmentVariablesError } from '../error/index.mjs';
 
-const { URL_BLAZE, BASE_URL } = process.env;
-
 /**
  * type opções da função start
  * 
@@ -81,7 +79,7 @@ export function BlazeCore(){
  */
 
 BlazeCore.prototype.start = function(){
-    if(!URL_BLAZE || !BASE_URL)
+    if(!process.env.URL_BLAZE || !process.env.BASE_URL)
         throw new EnvironmentVariablesError("URL BLAZE or BASE_URL");
 
     let [ param0 ] = arguments;
@@ -99,8 +97,8 @@ BlazeCore.prototype.start = function(){
     if(typeof requireNotRepeated === "undefined") requireNotRepeated = true;
     if(typeof type !== "string") type = "crash";
 
-    let wss = new ws(URL_BLAZE, {
-        origin: BASE_URL,
+    let wss = new ws(process.env.URL_BLAZE, {
+        origin: process.env.BASE_URL,
         headers: {
             'Upgrade': 'websocket',
             'Sec-Webscoket-Extensions': 'permessage-defalte; client_max_window_bits',
@@ -158,7 +156,7 @@ BlazeCore.prototype.start = function(){
 
 BlazeCore.prototype.recents = async function(){
     try{
-        let data = await request.get(BASE_URL + "/api/roulette_games/recent", { json: true });
+        let data = await request.get(process.env.BASE_URL + "/api/roulette_games/recent", { json: true });
 
         return { status: true, error: null, response: data }
     }catch(err){

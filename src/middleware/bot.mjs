@@ -1,17 +1,109 @@
 import { Analise, BlazeCore, Telegram } from '../core/index.mjs';
 import chalk from 'chalk';
+import { question } from 'readline-sync';
+import { setVariable } from '../util/index.mjs';
 
-const { ID_GROUP_MESSAGE, SAFE_AFTER_LOSS } = process.env;
+const { 
+    ID_GROUP_MESSAGE,
+    URL_BLAZE,
+    BASE_URL,
+    BOT_TOKEN
+} = process.env;
+
+/**
+ * opções de uso do bot
+ * 
+ * @typedef {object} IConstructorClassDad
+ * @property {boolean | IOptionsTimePaused} [timeAfterWin=] - pausar apos uma vitoria
+ * @property {boolean | IOptionsTimePaused} [timeAfterLoss=] - pausar apos uma perca
+ * @property {string} [refBlaze=] - referencia de link do site da blaze
+ * @property {ISticker} [sticker=] - figurinhas/imagens enviadas no resultado
+ */
+
+/**
+ * opções detalhadas do tempo de pausa
+ * 
+ * @typedef {object} IOptionsTimePaused
+ * @property {number} timePaused - tempo que o bot ficara pausado (em minutos)
+ * @property {string} pauseMessage - mensagem que ira apresentar apos pausar
+ */
+
+/**
+ * @typedef {object} ISticker
+ * @property {string} winNotGale - figura do win sem gale
+ * <br>
+ * - Obs.: Campo aceita uma `URL` ou nome da imagem dentro da pasta `sticker`
+ * @property {string} winGaleOne - figura do win no *GALE 1*
+ * <br>
+ * - Obs.: Campo aceita uma `URL` ou nome da imagem dentro da pasta `sticker`
+ * @property {string} winGaleTwo - figura do win no *GALE 2*
+ * <br>
+ * - Obs.: Campo aceita uma `URL` ou nome da imagem dentro da pasta `sticker`
+ * @property {string} loss
+ * <br>
+ * - Obs.: Campo aceita uma `URL` ou nome da imagem dentro da pasta `sticker`
+ */
+
+/**
+ * @typedef {object} ITypeBet
+ * @property {"pause" | "bet" | "gale-1" | "gale-2" | "safe"} phase
+ * @property {number} color
+ * @property {number} roll
+ * @property {boolean} jump
+ * @property {string} [id=]
+ */
 
 /**
  * @class
  * @classdesc
  * @author Elizandro Dantas
+ * @param {IConstructorClassDad} options
  * 
  * @see GitHub {@link https://github.com/elizandrodantas}
  */
 
-export function BotBlazeWithTelegram(){
+export function BotBlazeWithTelegram(options){
+    if(!URL_BLAZE){
+        let VALUE = question(`${chalk.red("[!required]")} Digite URL WSS da blaze: [${chalk.cyan("wss://api-v2.blaze.com/replication/?EIO=3&transport=websocket")}] `, {
+            defaultInput: "wss://api-v2.blaze.com/replication/?EIO=3&transport=websocket",
+            validate: (value) => value.indexOf("wss://") && value.match(/blaze.com/g)
+        });
+
+        setVariable('URL_BLAZE', VALUE);
+    }
+        
+
+    if(!BASE_URL){
+        let VALUE = question(`${chalk.red("[!required]")} Digite URL HTTP da blaze: [${chalk.cyan("https://blaze.com")}] `, {
+            defaultInput: "https://blaze.com",
+            validate: (value) => value.indexOf("https://") && value.match(/blaze.com/g)
+        });
+
+        setVariable('BASE_URL', VALUE);
+    }
+
+    if(!BOT_TOKEN){
+        let VALUE = question(`${chalk.red("[!required]")} Token do BOT TELEGRAM: [${chalk.cyan("00000000:ad4f6a77...")}] `, {
+            validate: (value) => value.split(/:/g).length === 2
+        });
+
+        setVariable('BOT_TOKEN', VALUE);
+    }
+        
+
+    if(!ID_GROUP_MESSAGE){
+        let VALUE = question(`${chalk.red("[!required]")} ID GRUP/CHANNEL/CHAT que ira receber os sinais: [${chalk.cyan("-999999999")}] `, {
+            validate: (value) => value
+        });
+
+        setVariable('ID_GROUP_MESSAGE', VALUE);
+    }
+
+    if(Boolean(typeof options.refBlaze === "string"))
+        setVariable('REF', options.refBlaze);
+    else
+        setVariable('REF', "dZONo");
+
     /** @api private */
     this.telegram = new Telegram();
 
@@ -26,6 +118,13 @@ export function BotBlazeWithTelegram(){
      * @type {import('../core/blaze.mjs').IResponseStart}    */
     this.socket;
 
+    /**
+     * @api private
+     * @type {IConstructorClassDad} 
+    */
+    this.options = options;
+
+    /** @type {ITypeBet} */
     this.bet = {
         phase: "pause",
         jump: null,
@@ -33,6 +132,7 @@ export function BotBlazeWithTelegram(){
         roll: null,
         id: null
     }
+
 }
 
 /**
@@ -88,7 +188,7 @@ BotBlazeWithTelegram.prototype.invokeAnalyst = async function(){
     if(verify){
         if(this.bet.color === null){
             this._updateBet('bet', true, last.color, last.roll, last.id);
-            await this.telegram.sendIn(last.color, ID_GROUP_MESSAGE, 0);
+            await this.telegram.sendIn(last.color, process.env.ID_GROUP_MESSAGE, 0);
         }
     }else{ }
 }
@@ -110,28 +210,47 @@ BotBlazeWithTelegram.prototype.invokeResult = async function(data){
     if(typeof color !== "undefined" && this.bet.color !== null){
         if(color === this.bet.color || color === 0){
             let typeResult = this.bet.phase.match(/gale/g) && color !== 0 ?
-                "gale" : 
-                color === 0 ?
-                "white" :
-                "green";
+                    "gale" : 
+                    color === 0 ?
+                    "white" :
+                    "green",
+                sticker = null;
 
+            await this.telegram.sendResult(typeResult, process.env.ID_GROUP_MESSAGE, { colorBet: this.bet.color, colorLast: color });
+            
+            if(Boolean(this.options && this.options.timeAfterWin)){
+                let { timeAfterWin } = this.options,
+                    time = typeof timeAfterWin?.timePaused === "number" ?
+                    timeAfterWin?.timePaused : 3,
+                    message = typeof timeAfterWin?.pauseMessage === "string" ?
+                    timeAfterWin?.pauseMessage : `⏱ ANALISANDO RESULTADOS`;
 
-            await this.telegram.sendResult(typeResult, ID_GROUP_MESSAGE, { colorBet: this.bet.color, colorLast: color }, true);
-            this._resetBet();
+                this._updateBet("safe", true, null, null, null);
+                this._timeNextBetSafe(time);
+                await this.telegram.send(message, process.env.ID_GROUP_MESSAGE);
+            }else{
+                this._resetBet();
+            }
         }else{
             if(this.bet.phase === "bet"){
-                await this.telegram.sendIn(this.bet.color, ID_GROUP_MESSAGE, 0, "GALE 1");
+                await this.telegram.sendIn(this.bet.color, process.env.ID_GROUP_MESSAGE, 0, "GALE 1");
                 this._updateBet("gale-1");
             }else if(this.bet.phase === "gale-1"){
-                await this.telegram.sendIn(this.bet.color, ID_GROUP_MESSAGE, 0, "GALE 2");
+                await this.telegram.sendIn(this.bet.color, process.env.ID_GROUP_MESSAGE, 0, "GALE 2");
                 this._updateBet("gale-2");
             }else{
-                await this.telegram.sendResult("loss", ID_GROUP_MESSAGE, { colorBet: this.bet.color, colorLast: color}, true);
+                await this.telegram.sendResult("loss", process.env.ID_GROUP_MESSAGE, { colorBet: this.bet.color, colorLast: color}, true);
                 
-                if(SAFE_AFTER_LOSS){
+                if(Boolean(this.options && this.options.timeAfterLoss)){
+                    let { timeAfterLoss } = this.options,
+                        time = typeof timeAfterLoss?.timePaused === "number" ?
+                        Number(timeAfterLoss.timePaused) : 3,
+                        message = typeof timeAfterLoss?.pauseMessage === "string" ?
+                        String(timeAfterLoss?.pauseMessage) : `⏱ ANALISANDO RESULTADOS`;
+                
                     this._updateBet("safe", true, null, null, null);
-                    this._timeNextBetSafe(3);
-                    await this.telegram.send(`⏱ ANALISANDO RESULTADOS`, ID_GROUP_MESSAGE);
+                    this._timeNextBetSafe(time);
+                    await this.telegram.send(message, process.env.ID_GROUP_MESSAGE);
                 }else{
                     this._resetBet();
                 }
@@ -214,4 +333,12 @@ BotBlazeWithTelegram.prototype._timeNextBetSafe = function(minute = Math.floor((
     setTimeout(() => {
         this._resetBet();
     }, 6e4 * minute);
+}
+
+BotBlazeWithTelegram.prototype._getStickerOfOptions = function(){
+    if(Boolean(this.options && this.options.sticker)){
+        let { sticker } = this.options;
+
+        
+    }
 }

@@ -5,9 +5,9 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
 import { EnvironmentVariablesError } from '../error/index.mjs';
- 
-const { BOT_TOKEN, REF } = process.env,
-    __filename = fileURLToPath(import.meta.url),
+import { startWith } from '../util/index.mjs';
+
+const __filename = fileURLToPath(import.meta.url),
     __dirname = dirname(__filename);
 
 /**
@@ -26,13 +26,17 @@ const { BOT_TOKEN, REF } = process.env,
  */
 
 export function Telegram(){
-    if(!BOT_TOKEN)
+    if(!process.env.BOT_TOKEN)
         throw new EnvironmentVariablesError("BOT_TOKEN");
+
+    if(process.env.BOT_TOKEN.split(':').length !== 2)
+        throw new EnvironmentVariablesError("BOT_TOKEN INVALID");
+
 
     /** @type {"pause" | "on"} */
     this.status = "pause";
     /** @type {Telegraf} */
-    this.client = new Telegraf(BOT_TOKEN);
+    this.client = new Telegraf(process.env.BOT_TOKEN);
 
     this.messageInfoBot = [
         "🤖 <b>Bot Info:</b> \n",
@@ -167,13 +171,24 @@ Telegram.prototype.sendSticker = async function(filename, clientId){
     if(!filename || !clientId)
         return { status: "error", message: "sticker e id do chat são argumentos obrigatorios" }
 
-    let file = resolve(__dirname, '../', '../', 'sticker', filename)
+    let sticker = null;
 
-    try{
-        readFileSync(file);
-    }catch(err){
-        return { status: "error", message: "sticker não existe" }
+    if(startWith(filename, 'http')){
+        let file = resolve(__dirname, '../', '../', 'sticker', filename)
+
+        try{
+            readFileSync(file);
+        }catch(err){
+            return { status: "error", message: "sticker não existe" }
+        }
+
+        sticker = file;
+    }else if(startWith(filename, '.', 5, true)){
+        sticker = filename;
     }
+
+    if(!sticker)
+        return { status: "error", message: "não foi possivel encontrar o tipo da sticker" }
 
     try{
         if(typeof clientId === "object" && Array.isArray(clientId)){
@@ -220,7 +235,7 @@ Telegram.prototype.sendIn = async function(color, clientId, protection = false, 
     message.push(`ENTRE NO ${this._getColorNameOrEmoticon(color, true)} ${this._getColorNameOrEmoticon(color, false, true)}`);
     if(typeof protection === "number")
         message.push(`PROTEJA NO ${this._getColorNameOrEmoticon(protection, true)} ${this._getColorNameOrEmoticon(protection, false, true)}`);
-    message.push(`\n<pre>https://blaze.com/${REF ? "r/" + REF : ""}</pre>`);
+    message.push(`\n<pre>https://blaze.com/${process.env.REF ? "r/" + process.env.REF : ""}</pre>`);
 
     return await this.send(message.join('\n'), clientId, { parse_mode: "HTML" } );
 }
@@ -233,18 +248,21 @@ Telegram.prototype.sendIn = async function(color, clientId, protection = false, 
  * @instance
  * @param {"green" | "gale" | "white" | "loss"} result 
  * @param {string | string[]} clientId 
- * @param {ISendInfoInSendResult?} infoBet 
- * @param {boolean} sendInfo - envia informações de jogada e resultado da jogada 
+ * @param {ISendInfoInSendResult?} [infoBet=] - envia informações de jogada com resultado da jogada 
+ * <br>
+ * - Exemplo: 
+ *     ``` 🔸 ENTRAMOS NO 🔴🔹 RESULTADO FOI 🔴```
+ * @param {string} [sticker=] - envia figura/imagem do resultado
  * @returns {Promise<{status: "error" | "success", message: string }>}
  * @api public
  */
 
-Telegram.prototype.sendResult = async function(result, clientId, infoBet, sendInfo = true){
+Telegram.prototype.sendResult = async function(result, clientId, infoBet = false, sticker = false){
     if(!["green", "white", "gale", "loss"].includes(result))
         return { status: "error", message: "tipo do resultado invalido" }
     
     if(typeof infoBet === "object" &&
-        ("colorBet" in infoBet && "colorLast" in infoBet) && sendInfo){
+        ("colorBet" in infoBet && "colorLast" in infoBet)){
 
         let message = [];
 
@@ -254,16 +272,8 @@ Telegram.prototype.sendResult = async function(result, clientId, infoBet, sendIn
         await this.send(message.join('\n'), clientId, { parse_mode: "HTML" });
     }
 
-    let stickerName = result === "green" ?
-        "win" :
-        result === "gale" ? 
-        "win-in-gale" :
-        result === "white" ?
-        "win-white" :
-        "loss";
-
-    if(stickerName)
-        await this.sendSticker(stickerName + '.jpg', clientId);
+    if(typeof sticker === "string")
+        await this.sendSticker(sticker, clientId);
 
     return { status: "success", message: "resultado enviado com sucesso" }
 }
