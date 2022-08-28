@@ -12,6 +12,8 @@ A [blaze.com](https://blaze.com/r/dZONo), site de aposta online, operada pela em
 
 O objetivo deste bot é enviar, após uma [analise](#analise), sinais do resultado da proxima rodada para grupos/canais/chat do telegram.
 
+**❤️ Donation ❤️:** `ce71c8ba-4c42-4a72-85b4-64fbe3ace08e` _chave aleatoria_ **NuBank 💜**
+
 ## Analise 
 _as entradas são feitas por condições definidas na analise_
 * Alterações de analise podem ser feitas no arquivo [`analise.mjs`](https://github.com/elizandrodantas/bot-blaze-telegram/blob/main/src/core/analise.mjs)
@@ -126,7 +128,5 @@ interface ISticker {
 ## Contato
 
 Instagram: <a href="https://www.instagram.com/elizandrodantas/" target="_blank">Elizandro Dantas</a>
-
-**❤️ Donation ❤️:** `ce71c8ba-4c42-4a72-85b4-64fbe3ace08e` _chave aleatoria_ **NuBank 💜**
 
 <p align="right"><a href="#topo">topo</a></p>
