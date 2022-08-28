@@ -127,4 +127,6 @@ interface ISticker {
 
 Instagram: <a href="https://www.instagram.com/elizandrodantas/" target="_blank">Elizandro Dantas</a>
 
+**❤️ Donation ❤️:** `ce71c8ba-4c42-4a72-85b4-64fbe3ace08e` _chave aleatoria_ **NuBank 💜**
+
 <p align="right"><a href="#topo">topo</a></p>

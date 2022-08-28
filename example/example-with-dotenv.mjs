@@ -27,7 +27,7 @@ async function start(){
                 pauseMessage: "Analisando o loss",
                 timePaused: 3 // minutos
             },
-            timeAfterWin: true
+            // timeAfterWin: true
         })
 
     await controllerBot.run();

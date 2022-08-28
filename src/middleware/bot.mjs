@@ -245,7 +245,9 @@ BotBlazeWithTelegram.prototype.invokeResult = async function(data){
                 await this.telegram.sendIn(this.bet.color, process.env.ID_GROUP_MESSAGE, Boolean(this.options.enterProtection) ? 0 : false, "GALE 2");
                 this._updateBet("gale-2");
             }else{
-                await this.telegram.sendResult("loss", process.env.ID_GROUP_MESSAGE, { colorBet: this.bet.color, colorLast: color}, true);
+                let sticker = this._getStickerOfOptions('loss');
+
+                await this.telegram.sendResult("loss", process.env.ID_GROUP_MESSAGE, { colorBet: this.bet.color, colorLast: color}, sticker);
                 
                 if(Boolean(this.options && this.options.timeAfterLoss)){
                     let { timeAfterLoss } = this.options,
