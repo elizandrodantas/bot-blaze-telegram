@@ -156,7 +156,7 @@ Telegram.prototype.send = async function(message, clientId, options = { parse_mo
  * @method sendSticker
  * @memberof Telegram
  * @instance
- * @param {string} filename 
+ * @param {string} sticker 
  * @param {string | string[]} clientId 
  * @returns {Promise<{status: "error" | "success", message?: string}>}
  * @api public
@@ -164,32 +164,21 @@ Telegram.prototype.send = async function(message, clientId, options = { parse_mo
  * @see Core Telegram {@link https://core.telegram.org/bots/api#sendsticker}
  */
 
-Telegram.prototype.sendSticker = async function(filename, clientId){
+Telegram.prototype.sendSticker = async function(sticker, clientId){
     if(this.status !== "on")
         return { status: "error", message: "bot ainda não foi startado!" }
 
-    if(!filename || !clientId)
+    if(!sticker || !clientId)
         return { status: "error", message: "sticker e id do chat são argumentos obrigatorios" }
 
-    let sticker = null;
-
-    if(startWith(filename, 'http')){
-        let file = resolve(__dirname, '../', '../', 'sticker', filename)
-
-        try{
-            readFileSync(file);
-        }catch(err){
-            return { status: "error", message: "sticker não existe" }
-        }
-
-        sticker = file;
-    }else if(startWith(filename, '.', 5, true)){
-        sticker = filename;
+    let file = resolve(__dirname, '../', '../', 'sticker', sticker)
+    
+    try{
+        readFileSync(file);
+    }catch(err){
+        return { status: "error", message: "sticker não existe" }
     }
-
-    if(!sticker)
-        return { status: "error", message: "não foi possivel encontrar o tipo da sticker" }
-
+    
     try{
         if(typeof clientId === "object" && Array.isArray(clientId)){
             for (let index = 0; index < clientId.length; index++) {

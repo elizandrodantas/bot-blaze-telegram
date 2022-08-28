@@ -12,14 +12,15 @@ A [blaze.com](https://blaze.com/r/dZONo), site de aposta online, operada pela em
 
 O objetivo deste bot é enviar, após uma [analise](#analise), sinais do resultado da proxima rodada para grupos/canais/chat do telegram.
 
-### Analise
+## Analise 
+_as entradas são feitas por condições definidas na analise_
 * Alterações de analise podem ser feitas no arquivo [`analise.mjs`](https://github.com/elizandrodantas/bot-blaze-telegram/blob/main/src/core/analise.mjs)
 
 <p align="right"><a href="#topo">topo</a></p>
 
 ## Visualizar
 
-<img src="./assets/20220825_140538.gif" alt="..." />
+<img src="./assets/20220827_221141.gif" alt="..." />
 
 <p align="right"><a href="#topo">topo</a></p>
 
@@ -54,37 +55,71 @@ _dentro do repositorio existe um arquivo de exemplo `(.env.example)`_
 URL_BLAZE="" // url WS da blaze
 BASE_URL="" // base url do site da blaze
 BOT_TOKEN="" // token do bot telegram
-ID_GROUP_MESSAGE="" // id do grupo/canal/chat do telegram que ira receber os sinais (string ou string[])
-// ID_GROUP_MESSAGE=[""]
-
-/**
- * Variáveis não obrigatorias
-*/
-
-REF="" // envia em todo sinal um link da blaze com sua referencia
-SAFE_AFTER_LOSS="" // apos um loss, ele passara um tempo entre 2 e 4 minutos para entrar em uma proxima jogada, depois disso começa analisar novamente
-HEROKU_URL="" // ativa o loop para acessar url a cada 25m
+ID_GROUP_MESSAGE="" // id do grupo/canal/chat do telegram que ira receber os sinais (string)
 ```
+
+_caso as variaveis não forem encontradas dentro do processo, serão setados em forma de input no console_ **(>v0.1.1)**
 
 <p align="right"><a href="#topo">topo</a></p>
 
 ## Uso
 
-- npm
-```sh
-npm start
+```javascript
+import { BotBlazeWithTelegram } from './src/index.mjs';
+
+new BotBlazeWithTelegram(options).run();
 ```
 
-ou
+_as opções estão detalhadas em [opções](#opções)_
 
-- yarn
-```sh
-yarn start
+<p align="right"><a href="#topo">topo</a></p>
+
+## Opções
+
+#### Interface
+```ts
+interface IConstructorClassDad {
+    timeAfterWin: boolean | IOptionsTimePaused;
+    timeAfterLoss: boolean | IOptionsTimePaused;
+    refBlaze: string;
+    sticker: ISticker;
+    enterProtection: boolean;
+}
+
+interface IOptionsTimePaused {
+    timePaused: number;
+    pauseMessage: string;
+}
+
+interface ISticker {
+    winNotGale: string;
+    winGaleOne: string;
+    winGaleTwo: string;
+    loss: string;
+}
 ```
 
-</br>
+#### Detalhes
+* **IConstructorClassDad.timeAfterWin** _pausa as entradas do bot apos um **WIN**_
+    - `IConstructorClassDad.timeAfterWin.pauseMessage` - mensagem apresentada quando pausa ativa (padrão: sem mensagem)
+    - `IConstructorClassDad.timeAfterWin.timePaused` - tempo que ficara em pausa _em minutos_ (padrão: 3)
+* **IConstructorClassDad.timeAfterLoss** _pausa as entradas do bot apos um **LOSS**_
+    - `IConstructorClassDad.timeAfterLoss.pauseMessage` - mensagem apresentada quando pausa ativa (padrão: sem mensagem)
+    - `IConstructorClassDad.timeAfterLoss.timePaused` - tempo que ficara em pausa _em minutos_ (padrão: 3)
+* **IConstructorClassDad.refBlaze** _codigo de referencia blaze_
+* **IConstructorClassDad.sticker** _os arquivos devem ficar na pasta **sticker** na raiz_
+    - `IConstructorClassDad.sticker.winNotGale` - nome da figura quando resultado: WIN sem GALE
+    - `IConstructorClassDad.sticker.winGaleOne` - nome da figura quando resultado: WIN no GALE 1
+    - `IConstructorClassDad.sticker.winGaleTwo` - nome da figura quando resultado: WIN no GALE 2
+    - `IConstructorClassDad.sticker.loss` - nome da figura quando resultado: LOSS
+* **IConstructorClassDad.enterProtection** _enviar entrada de proteção no BRANCO nas mensagens de entrada_
 
-<img src="./assets/bot-iniciado.png" alt="starting" />
+<p align="right"><a href="#topo">topo</a></p>
+
+## Exemplos
+
+1. No [exemplo1](https://github.com/elizandrodantas/bot-blaze-telegram/tree/main/example/example-with-dotenv.mjs) usando a ferramenta [Dotenv](https://github.com/motdotla/dotenv)
+2. No [exemplo2](https://github.com/elizandrodantas/bot-blaze-telegram/tree/main/example/example-without-dotenv.mjs) as variáveis ambiente deveram ser setadas direto no sistema ou preenchendo o formulário que será exibido no console
 
 <p align="right"><a href="#topo">topo</a></p>
 

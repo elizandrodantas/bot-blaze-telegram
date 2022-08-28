@@ -14,10 +14,11 @@ const {
  * opções de uso do bot
  * 
  * @typedef {object} IConstructorClassDad
- * @property {boolean | IOptionsTimePaused} [timeAfterWin=] - pausar apos uma vitoria
- * @property {boolean | IOptionsTimePaused} [timeAfterLoss=] - pausar apos uma perca
- * @property {string} [refBlaze=] - referencia de link do site da blaze
- * @property {ISticker} [sticker=] - figurinhas/imagens enviadas no resultado
+ * @property {boolean | IOptionsTimePaused} timeAfterWin - pausar apos uma vitoria
+ * @property {boolean | IOptionsTimePaused} timeAfterLoss - pausar apos uma perca
+ * @property {string} refBlaze - referencia de link do site da blaze
+ * @property {ISticker} sticker - figurinhas/imagens enviadas no resultado
+ * @property {boolean} enterProtection - enviar entrada na proteção
  */
 
 /**
@@ -45,12 +46,16 @@ const {
  */
 
 /**
+ * @typedef {"pause" | "bet" | "gale-1" | "gale-2" | "safe"} IPhaseBet
+ */
+
+/**
  * @typedef {object} ITypeBet
- * @property {"pause" | "bet" | "gale-1" | "gale-2" | "safe"} phase
+ * @property {IPhaseBet} phase
  * @property {number} color
  * @property {number} roll
  * @property {boolean} jump
- * @property {string} [id=]
+ * @property {string} id
  */
 
 /**
@@ -188,7 +193,7 @@ BotBlazeWithTelegram.prototype.invokeAnalyst = async function(){
     if(verify){
         if(this.bet.color === null){
             this._updateBet('bet', true, last.color, last.roll, last.id);
-            await this.telegram.sendIn(last.color, process.env.ID_GROUP_MESSAGE, 0);
+            await this.telegram.sendIn(last.color, process.env.ID_GROUP_MESSAGE, Boolean(this.options.enterProtection) ? 0 : false);
         }
     }else{ }
 }
@@ -214,29 +219,30 @@ BotBlazeWithTelegram.prototype.invokeResult = async function(data){
                     color === 0 ?
                     "white" :
                     "green",
-                sticker = null;
+                sticker = this._getStickerOfOptions(this.bet.phase);
 
-            await this.telegram.sendResult(typeResult, process.env.ID_GROUP_MESSAGE, { colorBet: this.bet.color, colorLast: color });
+            await this.telegram.sendResult(typeResult, process.env.ID_GROUP_MESSAGE, { colorBet: this.bet.color, colorLast: color }, sticker);
             
             if(Boolean(this.options && this.options.timeAfterWin)){
                 let { timeAfterWin } = this.options,
                     time = typeof timeAfterWin?.timePaused === "number" ?
-                    timeAfterWin?.timePaused : 3,
-                    message = typeof timeAfterWin?.pauseMessage === "string" ?
-                    timeAfterWin?.pauseMessage : `⏱ ANALISANDO RESULTADOS`;
+                    Number(timeAfterWin?.timePaused) : 3,
+                    message = timeAfterWin?.pauseMessage ?
+                    String(timeAfterWin?.pauseMessage) : false;
 
                 this._updateBet("safe", true, null, null, null);
                 this._timeNextBetSafe(time);
-                await this.telegram.send(message, process.env.ID_GROUP_MESSAGE);
+                if(typeof message === "string")
+                    await this.telegram.send(message, process.env.ID_GROUP_MESSAGE);
             }else{
                 this._resetBet();
             }
         }else{
             if(this.bet.phase === "bet"){
-                await this.telegram.sendIn(this.bet.color, process.env.ID_GROUP_MESSAGE, 0, "GALE 1");
+                await this.telegram.sendIn(this.bet.color, process.env.ID_GROUP_MESSAGE, Boolean(this.options.enterProtection) ? 0 : false, "GALE 1");
                 this._updateBet("gale-1");
             }else if(this.bet.phase === "gale-1"){
-                await this.telegram.sendIn(this.bet.color, process.env.ID_GROUP_MESSAGE, 0, "GALE 2");
+                await this.telegram.sendIn(this.bet.color, process.env.ID_GROUP_MESSAGE, Boolean(this.options.enterProtection) ? 0 : false, "GALE 2");
                 this._updateBet("gale-2");
             }else{
                 await this.telegram.sendResult("loss", process.env.ID_GROUP_MESSAGE, { colorBet: this.bet.color, colorLast: color}, true);
@@ -245,12 +251,13 @@ BotBlazeWithTelegram.prototype.invokeResult = async function(data){
                     let { timeAfterLoss } = this.options,
                         time = typeof timeAfterLoss?.timePaused === "number" ?
                         Number(timeAfterLoss.timePaused) : 3,
-                        message = typeof timeAfterLoss?.pauseMessage === "string" ?
-                        String(timeAfterLoss?.pauseMessage) : `⏱ ANALISANDO RESULTADOS`;
+                        message = timeAfterLoss?.pauseMessage ?
+                        String(timeAfterLoss?.pauseMessage) : false;
                 
                     this._updateBet("safe", true, null, null, null);
                     this._timeNextBetSafe(time);
-                    await this.telegram.send(message, process.env.ID_GROUP_MESSAGE);
+                    if(typeof message === "string")
+                        await this.telegram.send(message, process.env.ID_GROUP_MESSAGE);
                 }else{
                     this._resetBet();
                 }
@@ -335,10 +342,25 @@ BotBlazeWithTelegram.prototype._timeNextBetSafe = function(minute = Math.floor((
     }, 6e4 * minute);
 }
 
-BotBlazeWithTelegram.prototype._getStickerOfOptions = function(){
-    if(Boolean(this.options && this.options.sticker)){
-        let { sticker } = this.options;
+/**
+ * 
+ * @param {IPhaseBet} phase 
+ */
 
+BotBlazeWithTelegram.prototype._getStickerOfOptions = function(phase){
+    if(Boolean(this.options && this.options.sticker)){
+        let { sticker } = this.options,
+            { loss, winGaleOne, winGaleTwo, winNotGale } = sticker;
+
+        if(phase === "bet")
+            return winNotGale
+        if(phase === "gale-1")
+            return winGaleOne
+        if(phase === "gale-2")
+            return winGaleTwo
         
+        return loss;
     }
+
+    return false;
 }
