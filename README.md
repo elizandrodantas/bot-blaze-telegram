@@ -118,8 +118,8 @@ interface ISticker {
 
 ## Exemplos
 
-1. No [exemplo1](https://github.com/elizandrodantas/bot-blaze-telegram/tree/main/example/example-with-dotenv.mjs) usando a ferramenta [Dotenv](https://github.com/motdotla/dotenv)
-2. No [exemplo2](https://github.com/elizandrodantas/bot-blaze-telegram/tree/main/example/example-without-dotenv.mjs) as variáveis ambiente deveram ser setadas direto no sistema ou preenchendo o formulário que será exibido no console
+1. No _exemplo1_ [`example/example-with-dotenv.mjs`] usando a ferramenta [Dotenv](https://github.com/motdotla/dotenv)
+2. No _exemplo2_ [`example/example-without-dotenv.mjs`] as variáveis ambiente deveram ser setadas direto no sistema ou preenchendo o formulário que será exibido no console
 
 <p align="right"><a href="#topo">topo</a></p>
 
