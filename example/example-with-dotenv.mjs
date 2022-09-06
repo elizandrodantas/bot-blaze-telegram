@@ -21,6 +21,7 @@ async function start(){
                 winGaleOne: "win-in-gale.jpg",
                 winGaleTwo: "win-in-gale.jpg",
                 loss: "loss.jpg",
+                winWhite: "win-white.jpg"
             },
             enterProtection: true,
             timeAfterLoss: {

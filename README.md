@@ -98,6 +98,7 @@ interface ISticker {
     winGaleOne: string;
     winGaleTwo: string;
     loss: string;
+    winWhite: string;
 }
 ```
 
@@ -114,6 +115,7 @@ interface ISticker {
     - `IConstructorClassDad.sticker.winGaleOne` - nome da figura quando resultado: WIN no GALE 1
     - `IConstructorClassDad.sticker.winGaleTwo` - nome da figura quando resultado: WIN no GALE 2
     - `IConstructorClassDad.sticker.loss` - nome da figura quando resultado: LOSS
+    - `IConstructorClassDad.sticker.winWhite` - nome da figura quando resultado: WHITE
 * **IConstructorClassDad.enterProtection** _enviar entrada de proteção no BRANCO nas mensagens de entrada_
 
 <p align="right"><a href="#topo">topo</a></p>
