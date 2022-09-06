@@ -223,7 +223,7 @@ BotBlazeWithTelegram.prototype.invokeResult = async function(data){
                     "white" :
                     "green",
                 sticker = this._getStickerOfOptions(color === 0 ? "white" : this.bet.phase);
-
+ 
             await this.telegram.sendResult(typeResult, process.env.ID_GROUP_MESSAGE, { colorBet: this.bet.color, colorLast: color }, sticker);
             
             if(Boolean(this.options && this.options.timeAfterWin)){
@@ -355,7 +355,7 @@ BotBlazeWithTelegram.prototype._timeNextBetSafe = function(minute = Math.floor((
 BotBlazeWithTelegram.prototype._getStickerOfOptions = function(phase){
     if(Boolean(this.options && this.options.sticker)){
         let { sticker } = this.options,
-            { loss, winGaleOne, winGaleTwo, winNotGale } = sticker;
+            { loss, winGaleOne, winGaleTwo, winNotGale, winWhite } = sticker;
 
         if(phase === "bet")
             return winNotGale
@@ -364,7 +364,7 @@ BotBlazeWithTelegram.prototype._getStickerOfOptions = function(phase){
         if(phase === "gale-2")
             return winGaleTwo
         if(phase === "white")
-            return winGaleTwo
+            return winWhite
         
         return loss;
     }
