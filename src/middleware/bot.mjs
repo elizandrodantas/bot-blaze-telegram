@@ -31,6 +31,9 @@ const {
 
 /**
  * @typedef {object} ISticker
+ * @property {string} winWhite
+ * <br>
+ * - Obs.: Campo aceita uma `URL` ou nome da imagem dentro da pasta `sticker`
  * @property {string} winNotGale - figura do win sem gale
  * <br>
  * - Obs.: Campo aceita uma `URL` ou nome da imagem dentro da pasta `sticker`
@@ -219,7 +222,7 @@ BotBlazeWithTelegram.prototype.invokeResult = async function(data){
                     color === 0 ?
                     "white" :
                     "green",
-                sticker = this._getStickerOfOptions(this.bet.phase);
+                sticker = this._getStickerOfOptions(color === 0 ? "white" : this.bet.phase);
 
             await this.telegram.sendResult(typeResult, process.env.ID_GROUP_MESSAGE, { colorBet: this.bet.color, colorLast: color }, sticker);
             
@@ -346,7 +349,7 @@ BotBlazeWithTelegram.prototype._timeNextBetSafe = function(minute = Math.floor((
 
 /**
  * 
- * @param {IPhaseBet} phase 
+ * @param {IPhaseBet | "white"} phase 
  */
 
 BotBlazeWithTelegram.prototype._getStickerOfOptions = function(phase){
@@ -359,6 +362,8 @@ BotBlazeWithTelegram.prototype._getStickerOfOptions = function(phase){
         if(phase === "gale-1")
             return winGaleOne
         if(phase === "gale-2")
+            return winGaleTwo
+        if(phase === "white")
             return winGaleTwo
         
         return loss;
