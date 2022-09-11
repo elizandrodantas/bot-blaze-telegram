@@ -89,8 +89,8 @@ interface IConstructorClassDad {
 }
 
 interface IOptionsTimePaused {
-    timePaused: number;
-    pauseMessage: string;
+    time: number;
+    message: string;
 }
 
 interface ISticker {
@@ -104,11 +104,11 @@ interface ISticker {
 
 #### Detalhes
 * **IConstructorClassDad.timeAfterWin** _pausa as entradas do bot apos um **WIN**_
-    - `IConstructorClassDad.timeAfterWin.pauseMessage` - mensagem apresentada quando pausa ativa (padrão: sem mensagem)
-    - `IConstructorClassDad.timeAfterWin.timePaused` - tempo que ficara em pausa _em minutos_ (padrão: 3)
+    - `IConstructorClassDad.timeAfterWin.message` - mensagem apresentada quando pausa ativa (padrão: sem mensagem)
+    - `IConstructorClassDad.timeAfterWin.time` - tempo que ficara em pausa _em minutos_ (padrão: 3)
 * **IConstructorClassDad.timeAfterLoss** _pausa as entradas do bot apos um **LOSS**_
-    - `IConstructorClassDad.timeAfterLoss.pauseMessage` - mensagem apresentada quando pausa ativa (padrão: sem mensagem)
-    - `IConstructorClassDad.timeAfterLoss.timePaused` - tempo que ficara em pausa _em minutos_ (padrão: 3)
+    - `IConstructorClassDad.timeAfterLoss.message` - mensagem apresentada quando pausa ativa (padrão: sem mensagem)
+    - `IConstructorClassDad.timeAfterLoss.time` - tempo que ficara em pausa _em minutos_ (padrão: 3)
 * **IConstructorClassDad.refBlaze** _codigo de referencia blaze_
 * **IConstructorClassDad.sticker** _os arquivos devem ficar na pasta **sticker** na raiz_
     - `IConstructorClassDad.sticker.winNotGale` - nome da figura quando resultado: WIN sem GALE

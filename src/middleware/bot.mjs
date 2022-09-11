@@ -1,7 +1,7 @@
 import { Analise, BlazeCore, Telegram } from '../core/index.mjs';
 import chalk from 'chalk';
 import { question } from 'readline-sync';
-import { setVariable } from '../util/index.mjs';
+import { setVariable, isNumber, isString } from '../util/index.mjs';
 
 const { 
     ID_GROUP_MESSAGE,
@@ -25,8 +25,8 @@ const {
  * opções detalhadas do tempo de pausa
  * 
  * @typedef {object} IOptionsTimePaused
- * @property {number} timePaused - tempo que o bot ficara pausado (em minutos)
- * @property {string} pauseMessage - mensagem que ira apresentar apos pausar
+ * @property {number} time - tempo que o bot ficara pausado (em minutos)
+ * @property {string} message - mensagem que ira apresentar apos pausar
  */
 
 /**
@@ -226,16 +226,18 @@ BotBlazeWithTelegram.prototype.invokeResult = async function(data){
  
             await this.telegram.sendResult(typeResult, process.env.ID_GROUP_MESSAGE, { colorBet: this.bet.color, colorLast: color }, sticker);
             
-            if(Boolean(this.options && this.options.timeAfterWin)){
+            if(Boolean(this.options.timeAfterWin)){
                 let { timeAfterWin } = this.options,
-                    time = typeof timeAfterWin?.timePaused === "number" ?
-                    Number(timeAfterWin?.timePaused) : 3,
-                    message = timeAfterWin?.pauseMessage ?
-                    String(timeAfterWin?.pauseMessage) : false;
+                    time = isNumber(timeAfterWin) ?
+                    timeAfterWin : (timeAfterWin.time && isNumber(timeAfterWin.time)) ?
+                    timeAfterWin.time : 3,
+                    message = isString(timeAfterWin) ?
+                    timeAfterWin : (timeAfterWin.message && isString(timeAfterWin.message)) ?
+                    timeAfterWin.message : false;
 
                 this._updateBet("safe", true, null, null, null);
                 this._timeNextBetSafe(time);
-                if(typeof message === "string")
+                if(isString(message))
                     await this.telegram.send(message, process.env.ID_GROUP_MESSAGE);
             }else{
                 this._resetBet();
@@ -252,16 +254,17 @@ BotBlazeWithTelegram.prototype.invokeResult = async function(data){
 
                 await this.telegram.sendResult("loss", process.env.ID_GROUP_MESSAGE, { colorBet: this.bet.color, colorLast: color}, sticker);
                 
-                if(Boolean(this.options && this.options.timeAfterLoss)){
+                if(Boolean(this.options.timeAfterLoss)){
                     let { timeAfterLoss } = this.options,
-                        time = typeof timeAfterLoss?.timePaused === "number" ?
-                        Number(timeAfterLoss.timePaused) : 3,
-                        message = timeAfterLoss?.pauseMessage ?
-                        String(timeAfterLoss?.pauseMessage) : false;
+                        time = isNumber(timeAfterLoss) ?
+                        timeAfterLoss : (timeAfterLoss.time && isNumber(timeAfterLoss.time)) ?
+                        timeAfterLoss.time : 3,
+                        message = (timeAfterLoss.message && isString(timeAfterLoss.message)) ?
+                        timeAfterLoss.message : false;
                 
                     this._updateBet("safe", true, null, null, null);
                     this._timeNextBetSafe(time);
-                    if(typeof message === "string")
+                    if(isString(message))
                         await this.telegram.send(message, process.env.ID_GROUP_MESSAGE);
                 }else{
                     this._resetBet();
