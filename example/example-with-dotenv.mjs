@@ -20,16 +20,27 @@ async function start(){
                 winNotGale: "win.jpg",
                 winGaleOne: "win-in-gale.jpg",
                 winGaleTwo: "win-in-gale.jpg",
+                winWhite: "win-white.jpg",
                 loss: "loss.jpg",
-                winWhite: "win-white.jpg"
             },
             enterProtection: true,
-            timeAfterLoss: {
-                pauseMessage: "Analisando o loss",
-                timePaused: 3 // minutos
+            timeAfterWin: {
+                message: "Tempo para analise apos win",
+                time: 1
             },
-            // timeAfterWin: true
-        })
+            timeAfterLoss: {
+                time: 1,
+                message: "Tempo para analise apos loss"
+            },
+            summaryOfResult: {
+                interval: 1,
+                message: (number, info, cb) => {
+                    cb('mensagem sobressalente');
+                    
+                    return `Total de jogadas: ${number.total}\nWins seguidos: ${number.consecutive} ✅\nTotal de win: ${number.win} ✅\nTotal de loss: ${number.loss} ❌\nTaxa de acertividade: ${(number.win / number.total * 100).toFixed(1)}%`
+                }
+            }
+         })
 
     await controllerBot.run();
 

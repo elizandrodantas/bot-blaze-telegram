@@ -14,3 +14,11 @@ export function isObject(object){
 export function isNumber(number){
     return typeof number === "number";
 }
+
+export function isBoolean(boolean){
+    return typeof boolean === "boolean";
+}
+
+export function isFunction(fun){
+    return typeof fun === "function";
+}
