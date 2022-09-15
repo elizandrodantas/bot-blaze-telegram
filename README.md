@@ -177,7 +177,7 @@ interface IInfoSummary {
     },
     
     // sticker/figura
-    // nessa opção podem ser usado imagens que estão dentro da pasta STICKER ou uma url
+    // nessa opção podem ser usado imagens que estão dentro da pasta STICKER
     sticker: {
         winNotGale: "win.jpg",
         winGaleOne: "win-in-gale.jpg",
