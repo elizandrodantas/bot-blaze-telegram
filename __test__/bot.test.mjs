@@ -5,8 +5,8 @@ console.log(`pid: ${process.pid}`)
 
 let controller = new BotBlazeWithTelegram({
     // timeAfterWin: {
-    //     message: "Tempo para analise apos loss",
-    //     time: 5
+    //     message: "Tempo para analise apos win",
+    //     time: 1
     // },
     sticker: {
         winNotGale: "win.jpg",
@@ -16,10 +16,10 @@ let controller = new BotBlazeWithTelegram({
         loss: "loss.jpg",
     },
     enterProtection: true,
-    // timeAfterLoss: {
-    //     time: 5,
-    //     message: "Tempo para analise apos loss"
-    // },
+    timeAfterLoss: {
+        time: 1,
+        message: "Tempo para analise apos loss"
+    },
     summaryOfResult: {
         interval: 1,
         message: (number) => {

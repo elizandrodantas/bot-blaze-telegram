@@ -311,7 +311,7 @@ BotBlazeWithTelegram.prototype.invokeResult = async function(data){
 
             await this.telegram.sendResult(typeResult, process.env.ID_GROUP_MESSAGE, { colorBet: this.bet.color, colorLast: color }, sticker);
             
-            if(Boolean(this.options.timeAfterWin)){
+            if(this.options.timeAfterWin){
                 let { timeAfterWin } = this.options,
                     time = isNumber(timeAfterWin) ?
                     timeAfterWin : (timeAfterWin.time && isNumber(timeAfterWin.time)) ?
@@ -319,17 +319,14 @@ BotBlazeWithTelegram.prototype.invokeResult = async function(data){
                     message = isString(timeAfterWin) ?
                     timeAfterWin : (timeAfterWin.message && isString(timeAfterWin.message)) ?
                     timeAfterWin.message : false;
-
-                this._updateBet("safe", true, null, null, null);
+                    
                 this._timeNextBetSafe(time);
                 if(isString(message))
                     await this.telegram.send(message, process.env.ID_GROUP_MESSAGE);
-
-                return;
             }
 
             this._summary({ status: color === 0 ? "white" : this.bet.phase, send: { sequence: "add" }});
-            this._resetBet();
+            this.options.timeAfterWin ? this._updateBet("safe", true, null, null, null) : this._resetBet();
         }else{
             if(this.bet.phase === "bet"){
                 if(this.options?.noGale){
@@ -347,7 +344,7 @@ BotBlazeWithTelegram.prototype.invokeResult = async function(data){
 
                 await this.telegram.sendResult("loss", process.env.ID_GROUP_MESSAGE, { colorBet: this.bet.color, colorLast: color}, sticker);
                 
-                if(Boolean(this.options.timeAfterLoss)){
+                if(this.options.timeAfterLoss){
                     let { timeAfterLoss } = this.options,
                         time = isNumber(timeAfterLoss) ?
                         timeAfterLoss : (timeAfterLoss.time && isNumber(timeAfterLoss.time)) ?
@@ -355,16 +352,13 @@ BotBlazeWithTelegram.prototype.invokeResult = async function(data){
                         message = (timeAfterLoss.message && isString(timeAfterLoss.message)) ?
                         timeAfterLoss.message : false;
                 
-                    this._updateBet("safe", true, null, null, null);
                     this._timeNextBetSafe(time);
                     if(isString(message))
                         await this.telegram.send(message, process.env.ID_GROUP_MESSAGE);
-
-                    return;
                 }
                 
-                this._summary({ status: "loss", send: { sequence: "add" }});
-                this._resetBet();
+                this._summary({ status: "loss", send: { sequence: "add" }});    
+                this.options.timeAfterLoss ? this._updateBet("safe", true, null, null, null) : this._resetBet();
             }
         }
     }
