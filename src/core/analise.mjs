@@ -14,11 +14,20 @@ export function Analise(){
 
 /**
  * 
+ * @typedef {object} IResponseLastAnalise
+ * @property { "error" | "success" } status
+ * @property { import("./blaze.mjs").IDataBlazeResponse } last
+ * @property { boolean } verify
+ * @property { import("./blaze.mjs").IDataBlazeResponse[] } recents
+ */
+
+/**
+ * 
  * @method last
  * @memberof Analise
  * @instance
  * @param {import("./blaze.mjs").IResponseRecents} recents 
- * @returns {{ status: "error" | "success", last: import("./blaze.mjs").IDataOfResponseRecents, verify: boolean }}
+ * @returns {IResponseLastAnalise}
  * @api public
  */
 
@@ -32,13 +41,14 @@ Analise.prototype.last = function(recents){
     return {
         status: 'success',
         last: lastAccept,
+        recents: response,
         verify: this.verify(lastAccept)
     }
 }
 
 /**
  * 
- * @param {import("./blaze.mjs").IDataOfResponseRecents} last 
+ * @param {import("./blaze.mjs").IDataBlazeResponse} last 
  * @returns {boolean}
  */
 

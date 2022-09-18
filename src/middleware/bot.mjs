@@ -1,7 +1,9 @@
 import { Analise, BlazeCore, Telegram } from '../core/index.mjs';
 import chalk from 'chalk';
 import { question } from 'readline-sync';
-import { setVariable, isNumber, isString, random, isFunction } from '../util/index.mjs';
+import { setVariable, isNumber, isString, random, isFunction, _getColorNameOrEmoticon } from '../util/index.mjs';
+import { StaticMessageEnterBet, StaticMessageGale, StaticMessageWinAndLoss } from '../static/index.mjs';
+import { Messages } from '../structure/index.mjs';
 
 const { 
     ID_GROUP_MESSAGE,
@@ -18,9 +20,12 @@ const {
  * @property {boolean | IOptionsTimePaused} timeAfterLoss - pausar apos uma perca
  * @property {string} refBlaze - referencia de link do site da blaze
  * @property {ISticker} sticker - figurinhas/imagens enviadas no resultado
- * @property {boolean} enterProtection - enviar entrada na proteção
  * @property {boolean | IOptionsSummaryOfResult} summaryOfResult - resumo dos resultados diarios
- * @property {boolean} noGale - sem entradas na gale, apenas win de primeira
+ * @property {boolean | number} gale - sem entradas na gale, apenas win de primeira
+ * @property {ICBCurrentAndRecents} messageEnterBet - mensagem de entrada em aposta
+ * @property {ICBCurrentAndPlayed} messageWin - mensagem de win
+ * @property {ICBCurrentAndPlayedAndGale} messageOfGale - mensagem de gale .:. se gale ativo
+ * @property {ICBCurrentAndPlayed} messageLoss - mensagem de loss
  * 
  */
 
@@ -32,23 +37,13 @@ const {
  * @property {string} message - mensagem que ira apresentar apos pausar
  */
 
-/**
- * @typedef {object} INumberSummary
- * @property {number} win
- * @property {number} loss
- * @property {number} gale
- * @property {number} gale1
- * @property {number} gale2
- * @property {number} white
- * @property {number} consecutive
- * @property {number} total
- */
 
 /**
- * @typedef {object} IInfoSummary
- * @property {string} date
- * @property {number} lastUpdate
- * @property {number} day
+ * opções de resumo
+ * 
+ * @typedef {object} IOptionsSummaryOfResult
+ * @property {number} interval 
+ * @property {ICBMessageSummaryOfResult} message
  */
 
 /**
@@ -61,31 +56,26 @@ const {
  */
 
 /**
- * @typedef {object} IOptionsSummaryOfResult
- * @property {number} interval 
- * @property {ICBMessageSummaryOfResult} message
- */
-
-/**
+ * opções de sticker/figuras
+ * 
  * @typedef {object} ISticker
  * @property {string} winWhite
  * <br>
- * - Obs.: Campo aceita uma `URL` ou nome da imagem dentro da pasta `sticker`
- * @property {string} winNotGale - figura do win sem gale
+ * - Obs.: nome da imagem dentro da pasta `sticker`
+ * @property {string} win - figura do win sem gale
  * <br>
- * - Obs.: Campo aceita uma `URL` ou nome da imagem dentro da pasta `sticker`
- * @property {string} winGaleOne - figura do win no *GALE 1*
+ * - Obs.: nome da imagem dentro da pasta `sticker`
+ * @property {string} winGale - figura do win no *GALE*
  * <br>
- * - Obs.: Campo aceita uma `URL` ou nome da imagem dentro da pasta `sticker`
- * @property {string} winGaleTwo - figura do win no *GALE 2*
- * <br>
- * - Obs.: Campo aceita uma `URL` ou nome da imagem dentro da pasta `sticker`
+ * - Obs.: nome da imagem dentro da pasta `sticker`
  * @property {string} loss
  * <br>
- * - Obs.: Campo aceita uma `URL` ou nome da imagem dentro da pasta `sticker`
+ * - Obs.: nome da imagem dentro da pasta `sticker`
  */
 
 /**
+ * status da jogada
+ * 
  * @typedef {"pause" | "bet" | "gale-1" | "gale-2" | "safe"} IPhaseBet
  */
 
@@ -99,24 +89,68 @@ const {
  */
 
 /**
- * @typedef {object} IOptionsResetSummary
- * @property { boolean } onlyInfo
- * @property { boolean } onlyNumber
+ * key number in summary
+ * 
+ * @typedef {object} INumberSummary
+ * @property {number} win
+ * @property {number} loss
+ * @property {number} gale
+ * @property {number} gale1
+ * @property {number} gale2
+ * @property {number} white
+ * @property {number} consecutive
+ * @property {number} total
  */
 
 /**
- * @typedef {object} IDataOptionUpdateSummary
- * @property {IPhaseBet | "white" | "loss"} status
- * @property {IDataOptionUpdateSummarySend} send
- * @property {boolean} verifyDate
+ * key info in summary
+ * 
+ * @typedef {object} IInfoSummary
+ * @property {string} date
+ * @property {number} lastUpdate
+ * @property {number} day
  */
 
 /**
- * @typedef {object} IDataOptionUpdateSummarySend
- * @property {number} rule
- * @property {"add" | "reset"} sequence
+ * 
+ * @typedef {object} IGale
+ * @property {number} sequence
+ * @property {string} phase
  */
 
+/**
+ * interface de função [1]
+ * - current data
+ * 
+ * @interface T
+ * @typedef { (currentPlay: import('../core/blaze.mjs').IDataBlazeResponse, cb?: (message) => void) => string } ICBCurrent
+ */
+
+/**
+ * interface de função [2]
+ * - current data
+ * - betplayed data
+ * 
+ * @typedef { (currentPlay: import('../core/blaze.mjs').IDataBlazeResponse, betplayed: import('../core/blaze.mjs').IDataBlazeResponse, cb?: (message) => void) => string } ICBCurrentAndPlayed
+ */
+
+/**
+ * interface de função [3]
+ * - current data
+ * - betplayed data
+ * - recents data
+ * 
+ * @typedef { (currentPlay: import('../core/blaze.mjs').IDataBlazeResponse, recents: import('../core/blaze.mjs').IDataBlazeResponse[], cb?: (message) => void) => string } ICBCurrentAndRecents
+ */
+
+/**
+ * interface de função [4]
+ * - current data
+ * - betplayed data
+ * - gale sequence
+ * 
+ * @typedef { (currentPlay: import('../core/blaze.mjs').IDataBlazeResponse, betplayed: import('../core/blaze.mjs').IDataBlazeResponse, gale: IGale, cb?: (message) => void) => string } ICBCurrentAndPlayedAndGale
+ */
 
 /**
  * @class
@@ -201,6 +235,12 @@ export function BotBlazeWithTelegram(options){
         }
     }
 
+    /** @apí private */
+    this.gale = {
+        sequence: 0,
+        phase: "pause"
+    }
+
     /**
      * @api private
      * @type {import('../core/blaze.mjs').IResponseStart}    */
@@ -220,6 +260,8 @@ export function BotBlazeWithTelegram(options){
         roll: null,
         id: null
     }
+
+    this.cb = (message) => this.telegram.send(message, process.env.ID_GROUP_MESSAGE); 
 
     if(Boolean(options?.summaryOfResult.interval))
         this._summary({ send: { rule: Number(options?.summaryOfResult.interval )}});
@@ -245,7 +287,7 @@ BotBlazeWithTelegram.prototype.run = async function(){
     });
 
     this.socket.ev.on("game_graphing", (data) => {
-        console.log(chalk.cyan(`[${new Date().toLocaleString()}]`), chalk.yellow('status:'), 'round performed, result:', `[color: ${chalk.yellow(this._getColorNameOrEmoticon(data.color, false, true))} - roll: ${chalk.yellow(data.roll)}]`);
+        console.log(chalk.cyan(`[${new Date().toLocaleString()}]`), chalk.yellow('status:'), 'round performed, result:', `[color: ${chalk.yellow(_getColorNameOrEmoticon(data.color, { pt: true }))} - roll: ${chalk.yellow(data.roll)}]`);
         this._summary({ verifyDate: true });
 
         Promise.resolve([ this.invokeResult(data) ]);
@@ -276,12 +318,16 @@ BotBlazeWithTelegram.prototype.invokeAnalyst = async function(){
     
     if(!status || !response) return { status: "error", message: error }
 
-    let { verify, last } = this.analise.last({status: true, response});
+    let { verify, last, recents } = this.analise.last({status: true, response});
 
     if(verify){
         if(this.bet.color === null){
             this._updateBet('bet', true, last.color, last.roll, last.id);
-            await this.telegram.sendIn(last.color, process.env.ID_GROUP_MESSAGE, Boolean(this.options.enterProtection) ? 0 : false);
+
+            if(isFunction(this.options?.messageEnterBet))
+                return this.telegram.send(new Messages(this.options.messageEnterBet(last, recents, this.cb)).message, process.env.ID_GROUP_MESSAGE);
+
+            return this.telegram.send(new Messages(StaticMessageEnterBet(last, recents)).message, process.env.ID_GROUP_MESSAGE);
         }
     }else{ }
 }
@@ -292,7 +338,7 @@ BotBlazeWithTelegram.prototype.invokeAnalyst = async function(){
  * @method invokeResult
  * @memberof BotBlazeWithTelegram
  * @instance
- * @param {import('../core/blaze.mjs').IDataOfResponseRecents} data 
+ * @param {import('../core/blaze.mjs').IDataBlazeResponse} data 
  * @returns {Promise<void>}
  * @api public
  */
@@ -302,24 +348,23 @@ BotBlazeWithTelegram.prototype.invokeResult = async function(data){
 
     if(typeof color !== "undefined" && this.bet.color !== null){
         if(color === this.bet.color || color === 0){
-            let typeResult = this.bet.phase.match(/gale/g) && color !== 0 ?
-                    "gale" : 
-                    color === 0 ?
-                    "white" :
-                    "green",
-                sticker = this._getStickerOfOptions(color === 0 ? "white" : this.bet.phase);
+            let sticker = this._getStickerOfOptions(color === 0 ? "white" : this.bet.phase),
+                message;
 
-            await this.telegram.sendResult(typeResult, process.env.ID_GROUP_MESSAGE, { colorBet: this.bet.color, colorLast: color }, sticker);
+            if(sticker)
+                await this.telegram.sendSticker(sticker, process.env.ID_GROUP_MESSAGE);
+
+            if(isFunction(this.options?.messageWin))
+                message = new Messages(this.options.messageWin(data, this.bet, this.cb));
+            else
+                message = new Messages(StaticMessageWinAndLoss(data, this.bet));
+
+            await this.telegram.send(message.message, process.env.ID_GROUP_MESSAGE);
             
             if(this.options.timeAfterWin){
                 let { timeAfterWin } = this.options,
-                    time = isNumber(timeAfterWin) ?
-                    timeAfterWin : (timeAfterWin.time && isNumber(timeAfterWin.time)) ?
-                    timeAfterWin.time : 3,
-                    message = isString(timeAfterWin) ?
-                    timeAfterWin : (timeAfterWin.message && isString(timeAfterWin.message)) ?
-                    timeAfterWin.message : false;
-                    
+                    { message, time } = new Messages()._extractOfOption(timeAfterWin);
+
                 this._timeNextBetSafe(time);
                 if(isString(message))
                     await this.telegram.send(message, process.env.ID_GROUP_MESSAGE);
@@ -328,60 +373,53 @@ BotBlazeWithTelegram.prototype.invokeResult = async function(data){
             this._summary({ status: color === 0 ? "white" : this.bet.phase, send: { sequence: "add" }});
             this.options.timeAfterWin ? this._updateBet("safe", true, null, null, null) : this._resetBet();
         }else{
+            let message;
+
             if(this.bet.phase === "bet"){
-                if(this.options?.noGale){
-                    this._updateBet("gale-2");
-                    return this.invokeResult({ color });
+                if(!this.options?.gale){
+                    this._updateBet("loss");
+                    return this.invokeResult(data);
                 }
 
-                await this.telegram.sendIn(this.bet.color, process.env.ID_GROUP_MESSAGE, Boolean(this.options.enterProtection) ? 0 : false, "GALE 1");
-                this._updateBet("gale-1");
-            }else if(this.bet.phase === "gale-1"){
-                await this.telegram.sendIn(this.bet.color, process.env.ID_GROUP_MESSAGE, Boolean(this.options.enterProtection) ? 0 : false, "GALE 2");
-                this._updateBet("gale-2");
+                if(isFunction(this.options?.messageOfGale))
+                    message = new Messages(this.options.messageOfGale(data, this.bet, this.gale, this.cb));
+                else
+                    message = new Messages(StaticMessageGale(data, this.bet, this.gale));
+                
+                await this.telegram.send(message.message, process.env.ID_GROUP_MESSAGE);
+                this._gale({ sequence: "add" });
+                this._updateBet("gale");
+            }else if(this.bet.phase.indexOf('gale') === 0){   
+                if(this.gale.sequence + 1 >= this.options.gale){
+                    this._updateBet('loss');
+                    return this.invokeResult(data);
+                }
+                
+                if(isFunction(this.options?.messageOfGale))
+                    message = new Messages(this.options.messageOfGale(data, this.bet, this.gale, this.cb));
+                else
+                    message = new Messages(StaticMessageGale(data, this.bet, this.gale));
+                
+                await this.telegram.send(message.message, process.env.ID_GROUP_MESSAGE);
+                this._gale({ sequence: "add" });
             }else{
                 let sticker = this._getStickerOfOptions('loss');
 
-                await this.telegram.sendResult("loss", process.env.ID_GROUP_MESSAGE, { colorBet: this.bet.color, colorLast: color}, sticker);
+                if(sticker)
+                    await this.telegram.sendSticker(sticker, process.env.ID_GROUP_MESSAGE);
                 
-                if(this.options.timeAfterLoss){
-                    let { timeAfterLoss } = this.options,
-                        time = isNumber(timeAfterLoss) ?
-                        timeAfterLoss : (timeAfterLoss.time && isNumber(timeAfterLoss.time)) ?
-                        timeAfterLoss.time : 3,
-                        message = (timeAfterLoss.message && isString(timeAfterLoss.message)) ?
-                        timeAfterLoss.message : false;
-                
-                    this._timeNextBetSafe(time);
-                    if(isString(message))
-                        await this.telegram.send(message, process.env.ID_GROUP_MESSAGE);
-                }
-                
+                if(isFunction(this.options?.messageLoss))
+                    message = new Messages(this.options.messageLoss(data, this.bet, this.cb));
+                else
+                    message = new Messages(StaticMessageWinAndLoss(data, this.bet));
+
+                await this.telegram.send(message.message, process.env.ID_GROUP_MESSAGE);
+                this._gale({ sequence: "reset" });
                 this._summary({ status: "loss", send: { sequence: "add" }});    
                 this.options.timeAfterLoss ? this._updateBet("safe", true, null, null, null) : this._resetBet();
             }
         }
     }
-}
-
-/**
- * 
- * @method _getColorNameOrEmoticon
- * @memberof BotBlazeWithTelegram
- * @interface
- * @param {0 | 1 | 2} color 
- * @param {boolean} emoticon 
- * @param {boolean} pt 
- * @returns {string}
- * @api private
- */
-
-BotBlazeWithTelegram.prototype._getColorNameOrEmoticon = function(color, emoticon = false, pt = false){
-    if(color === 0) return emoticon ? "⚪️" : pt ? "branco" : "white";
-    if(color === 1) return emoticon ? "🔴" : pt ? "vermelho" : "red";
-    if(color === 2) return emoticon ? "⚫" : pt ? "preto" : "black";
-
-    return "";
 }
 
 /**
@@ -407,7 +445,7 @@ BotBlazeWithTelegram.prototype._resetBet = function(){
 /**
  * atualiza dados da jogada
  * 
- * @param {"bet" | "gale-1" | "gale-2" | "safe"} phase 
+ * @param {"bet" | "gale" | "loss" |"safe"} phase 
  * @param {boolean} jump 
  * @param {number} color 
  * @param {number} roll 
@@ -454,22 +492,28 @@ BotBlazeWithTelegram.prototype._timeNextBetSafe = function(minute = Math.floor((
 BotBlazeWithTelegram.prototype._getStickerOfOptions = function(phase){
     if(Boolean(this.options && this.options.sticker)){
         let { sticker } = this.options,
-            { loss, winGaleOne, winGaleTwo, winNotGale, winWhite } = sticker;
+            { loss, winGale, win, winWhite } = sticker;
 
         if(phase === "bet")
-            return winNotGale
-        if(phase === "gale-1")
-            return winGaleOne
-        if(phase === "gale-2")
-            return winGaleTwo
+            return win;
+        if(phase === "gale")
+            return winGale;
         if(phase === "white")
-            return winWhite
+            return winWhite;
         
         return loss;
     }
 
     return false;
 }
+
+/**
+ * opções resetar resumo de jogadas
+ * 
+ * @typedef {object} IOptionsResetSummary
+ * @property { boolean } onlyInfo
+ * @property { boolean } onlyNumber
+ */
 
 /**
  * 
@@ -508,6 +552,23 @@ BotBlazeWithTelegram.prototype._resetSummary = function(options){
         this.summaryPlays.number[val] = 0;
     });
 }
+
+/**
+ * opções do resumo de jogadas
+ * 
+ * @typedef {object} IDataOptionUpdateSummary
+ * @property {IPhaseBet | "white" | "loss"} status
+ * @property {IDataOptionUpdateSummarySend} send
+ * @property {boolean} verifyDate
+ */
+
+/**
+ * opção para alterar play do resumo
+ * 
+ * @typedef {object} IDataOptionUpdateSummarySend
+ * @property {number} rule
+ * @property {"add" | "reset"} sequence
+ */
 
 /**
  * 
@@ -580,4 +641,28 @@ BotBlazeWithTelegram.prototype._summary = function(data){
 
     if(this.summaryPlays.send.sequence >= this.summaryPlays.send.rule)
         this._summary({ send: { sequence: "reset" }});
+}
+
+/**
+ * 
+ * @typedef {object} IOptionsUpdateGale
+ * @property {"reset" | "add"} sequence
+ */
+
+/**
+ * 
+ * @param {IOptionsUpdateGale} options 
+ */
+
+BotBlazeWithTelegram.prototype._gale = function(options){
+    if(options?.sequence){
+        if(options.sequence === "add"){
+            this.gale.sequence++;
+            this.gale.phase = "gale " + this.gale.sequence;
+        }
+        if(options.sequence === "reset"){
+            this.gale.sequence = 0;
+            this.gale.phase = "off";
+        }
+    }
 }

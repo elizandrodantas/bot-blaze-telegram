@@ -208,6 +208,7 @@ Telegram.prototype.sendSticker = async function(sticker, clientId){
  * @param {string?} gale - informativo para entrada no gale
  * @returns {Promise<{ status: "error" | "success", message?: string }>}
  * @api public
+ * @deprecated campo descontinuado (>v0.1.20)
  */
 
 Telegram.prototype.sendIn = async function(color, clientId, protection = false, gale = false){

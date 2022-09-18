@@ -25,7 +25,7 @@ import { EnvironmentVariablesError } from '../error/index.mjs';
  */
 
 /**
- * @typedef {object} IDataOfResponseRecents
+ * @typedef {object} IDataBlazeResponse
  * @property {string} id
  * @property {string} created_at
  * @property {number} color
@@ -37,7 +37,7 @@ import { EnvironmentVariablesError } from '../error/index.mjs';
  * @typedef {object} IResponseRecents
  * @property {boolean} status
  * @property {any | null} error
- * @property {IDataOfResponseRecents} response
+ * @property {IDataBlazeResponse} response
  */
 
 /**

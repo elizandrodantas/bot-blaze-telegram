@@ -187,8 +187,8 @@ interface IInfoSummary {
     },
 
     // entrar em proteção (branco)
-    enterProtection: true //sim
-    enterProtection: false //não
+    enterProtection: true, //sim
+    enterProtection: false, //não
 
     //envio de mensagens com resumo do dia
     summaryOfResult: {
