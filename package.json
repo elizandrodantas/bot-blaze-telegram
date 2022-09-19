@@ -1,6 +1,6 @@
 {
   "name": "bot-blaze-telegram",
-  "version": "0.1.20",
+  "version": "0.1.35",
   "author": "Elizandro Dantas <dantaspm@icloud.com>",
   "main": "src/index.mjs",
   "type": "module",
