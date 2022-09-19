@@ -5,10 +5,10 @@ import { _getColorNameOrEmoticon } from '../src/util/index.mjs';
 console.log(`pid: ${process.pid}`)
 
 let controller = new BotBlazeWithTelegram({
-    // timeAfterWin: {
-    //     // message: "Tempo para analise apos win",
-    //     time: 1
-    // },
+    timeAfterWin: {
+        // message: "Tempo para analise apos win",
+        time: 1
+    },
     sticker: {
         win: "win.jpg",
         winGale: "win-in-gale.jpg",

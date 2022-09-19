@@ -94,11 +94,14 @@ _as opções estão detalhadas em [opções](#opções)_
 interface IConstructorClassDad {
     timeAfterWin?: boolean | IOptionsTimePaused;
     timeAfterLoss?: boolean | IOptionsTimePaused;
-    refBlaze?s: string;
+    refBlaze?: string;
     sticker: ISticker;
-    enterProtection?: boolean;
     summaryOfResult?: boolean | IOptionsSummaryOfResult;
-    noGale?: boolean;
+    gale?: boolean | number;
+    messageEnterBet: ICBCurrentAndRecents;
+    messageWin: ICBCurrentAndPlayed;
+    messageLoss: ICBCurrentAndPlayed;
+    messageOfGale: ICBCurrentAndPlayedAndGale
 }
 
 interface IOptionsTimePaused {
@@ -107,9 +110,8 @@ interface IOptionsTimePaused {
 }
 
 interface ISticker {
-    winNotGale: string;
-    winGaleOne: string;
-    winGaleTwo: string;
+    win: string;
+    winGale: string;
     loss: string;
     winWhite: string;
 }
@@ -135,6 +137,27 @@ interface IInfoSummary {
     lastUpdate: number;
     day: number;
 }
+
+interface IDataBlazeResponse {
+    id: string;
+    color: number;
+    roll: number;
+    created_at: string;
+    server_seed: string;
+}
+
+interface IGale {
+    sequence: number;
+    phase: string;
+}
+
+type ICB = (message: string) => void;
+
+type ICBCurrentAndRecents = (currentPlay: IDataBlazeResponse, recents: IDataBlazeResponse[], cb: ICB) => string;
+
+type ICBCurrentAndPlayed = (currentPlay: IDataBlazeResponse, betplayed: IDataBlazeResponse, cb: ICB) => string;
+
+type ICBCurrentAndPlayedAndGale = (currentPlay: IDataBlazeResponse, betplayed: IDataBlazeResponse, gale: IGale, cb: ICB) => string;
 ```
 
 #### Detalhes
@@ -146,16 +169,18 @@ interface IInfoSummary {
     - `IConstructorClassDad.timeAfterLoss.time` - tempo que ficara em pausa _em minutos_ (padrão: 3)
 * **IConstructorClassDad.refBlaze** _codigo de referencia blaze_
 * **IConstructorClassDad.sticker** _os arquivos devem ficar na pasta **sticker** na raiz_
-    - `IConstructorClassDad.sticker.winNotGale` - nome da figura quando resultado: WIN sem GALE
-    - `IConstructorClassDad.sticker.winGaleOne` - nome da figura quando resultado: WIN no GALE 1
-    - `IConstructorClassDad.sticker.winGaleTwo` - nome da figura quando resultado: WIN no GALE 2
+    - `IConstructorClassDad.sticker.win` - nome da figura quando resultado: WIN sem GALE
+    - `IConstructorClassDad.sticker.winGale` - nome da figura quando resultado: WIN no GALE
     - `IConstructorClassDad.sticker.loss` - nome da figura quando resultado: LOSS
     - `IConstructorClassDad.sticker.winWhite` - nome da figura quando resultado: WHITE
-* **IConstructorClassDad.enterProtection** _enviar entrada de proteção no BRANCO nas mensagens de entrada_
 * **IConstructorClassDad.summaryOfResult** _opções de resumo_
     - `IConstructorClassDad.summaryOfResult.interval` - intervalo para envio de mensagem. obs.: caso valor `1`, a cada 1 jogada ele enviara o resumo
     - `IConstructorClassDad.summaryOfResult.message` - mensagem personalizada
-* **IConstructorClassDad.noGale** _caso verdadeiro, não fara entrada nas jogadas gale_
+* **IConstructorClassDad.gale** _caso verdadeiro, não fara entrada nas jogadas gale_
+* **IConstructorClassDad.messageEnterBet** _mensagem personalizada de entrada_
+* **IConstructorClassDad.messageWin** _mensagem personalizada quando resultado: WIN_
+* **IConstructorClassDad.messageLoss** _mensagem personalizada quando resultado: LOSS_
+* **IConstructorClassDad.messageOfGale** _mensagem personalizada quando entrar em uma GALE_
 
 ### Todas opões com forma de uso:
 ```js
@@ -165,7 +190,7 @@ interface IInfoSummary {
     // or
     timeAfterWin: {
         message: "mensagem",
-        time: 3
+        time: 1
     },
 
     // tempo após loss
@@ -173,22 +198,17 @@ interface IInfoSummary {
     // or
     timeAfterLoss: {
         message: "mensagem",
-        time: 3
+        time: 1
     },
     
     // sticker/figura
     // nessa opção podem ser usado imagens que estão dentro da pasta STICKER
     sticker: {
-        winNotGale: "win.jpg",
-        winGaleOne: "win-in-gale.jpg",
-        winGaleTwo: "win-in-gale.jpg",
+        win: "win.jpg",
+        winGale: "win-in-gale.jpg",
         winWhite: "win-white.jpg",
         loss: "loss.jpg",
     },
-
-    // entrar em proteção (branco)
-    enterProtection: true, //sim
-    enterProtection: false, //não
 
     //envio de mensagens com resumo do dia
     summaryOfResult: {
@@ -203,15 +223,60 @@ interface IInfoSummary {
             cb("mensagem sobressalente");
 
             return "Total de jogadas: ${number.total}" +
-            "\nWins seguidos: ${number.consecutive} ✅" +
-            "\nTotal de win: ${number.win} ✅" +
-            "\nTotal de loss: ${number.loss} ❌" +
-            "\nTaxa de acertividade: ${(number.win / number.total * 100).toFixed(1)}%";
+                "\nWins seguidos: ${number.consecutive} ✅" +
+                "\nTotal de win: ${number.win} ✅" +
+                "\nTotal de loss: ${number.loss} ❌" +
+                "\nTaxa de acertividade: ${(number.win / number.total * 100).toFixed(1)}%";
         }
-    }
+    },
 
-    // Opção de entrada nas jogadas gale 1 e 2
-    noGale: true // não entra
+    // Opção de entrada nas jogadas gale
+    gale: false, // não entra
+    gale: 2, // vai ate a gale 2
+
+    // Mensagem personalizada de entrada
+    messageEnterBet: (current, recents, cb) => {
+        // current - ultima jogada
+        // recents - ultimas 20 jogadas
+        // cb - envio de mensagens sobressalentes .:. ex: cb('test callback');
+
+        return "🔎 <b>SINAL ENCONTRADO:</b>\n" +
+            `\nENTRE NO ${_getColorNameOrEmoticon(current.color, { emoticon: true })} ${_getColorNameOrEmoticon(current.color, { pt: true, upper: true })}` +
+            `\nPROTEJA NO ${_getColorNameOrEmoticon(0, { emoticon: true })} ${_getColorNameOrEmoticon(0, { pt: true, upper: true })}` +
+            `\n\n<pre>https://blaze.com/${process.env.REF ? "r/" + process.env.REF : ""}</pre>`;
+    },
+
+    // Mensagem personalizada de Win
+    messageWin: (current, betplayed, cb) => {
+        // current - ultima jogada
+        // betplayed - dados da entrada
+        // cb - envio de mensagens sobressalentes .:. ex: cb('test callback');
+
+        return `🔸 ENTRAMOS NO ${_getColorNameOrEmoticon(betplayed.color, { emoticon: true })}` +
+            `\n🔹 RESULTADO FOI ${_getColorNameOrEmoticon(current.color, { emoticon: true })}`;
+    },
+
+    // Mensagem personalizada de Gale
+    messageOfGale: (current, betplayed, gale, cb) => {
+        // current - ultima jogada
+        // betplayed - dados da entrada
+        // gale - informações do gale
+        // cb - envio de mensagens sobressalentes .:. ex: cb('test callback');
+
+        return `⚠️ <b>ENTROU PRA GALE ${gale.sequence + 1}:</b>\n` +
+            `\nENTRE NO ${_getColorNameOrEmoticon(current.color, { emoticon: true })} ${_getColorNameOrEmoticon(current.color, { pt: true, upper: true })}` +
+            `\nPROTEJA NO ${_getColorNameOrEmoticon(0, { emoticon: true })} ${_getColorNameOrEmoticon(0, { pt: true, upper: true })}`;
+    },
+
+    // Mensagem personalizada de Loss
+    messageLoss: (current, betplayed, cb) => {
+        // current - ultima jogada
+        // betplayed - dados da entrada
+        // cb - envio de mensagens sobressalentes .:. ex: cb('test callback');
+
+        return `🔸 ENTRAMOS NO ${_getColorNameOrEmoticon(betplayed.color, { emoticon: true })}` +
+            `\n🔹 RESULTADO FOI ${_getColorNameOrEmoticon(current.color, { emoticon: true })}`;
+    }
 }
 ```
 
