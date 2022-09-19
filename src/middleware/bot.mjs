@@ -370,6 +370,7 @@ BotBlazeWithTelegram.prototype.invokeResult = async function(data){
                     await this.telegram.send(message, process.env.ID_GROUP_MESSAGE);
             }
 
+            this._gale({ sequence: "reset" });
             this._summary({ status: color === 0 ? "white" : this.bet.phase, send: { sequence: "add" }});
             this.options.timeAfterWin ? this._updateBet("safe", true, null, null, null) : this._resetBet();
         }else{
