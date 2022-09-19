@@ -21,13 +21,10 @@ O objetivo deste bot é enviar, após uma [analise](#analise), sinais do resulta
 
 <p align="right"><a href="#topo">topo</a></p>
 
-## Novidades (v0.1.2)
+## Novidades (v0.1.35)
 
-1. Adicionado a funcionalidade de resumo das jogadas diarias:
-    - envio de mensagem personalizada;
-    - _essa funcionalidade foi uma sugestão de um usuário_
-    - <img src="./assets/15-09-2022.png" alt="screenshot">
-2. Opção de não entrar no gale
+1. Opção de mensagens personalizadas;
+2. Opção de quantidades de gales;
 
 <p align="right"><a href="#topo">topo</a></p>
 
