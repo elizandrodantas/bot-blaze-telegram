@@ -8,7 +8,7 @@ import { BotBlazeWithTelegram } from '../src/index.mjs'
 
 figlet('Blaze with Telegram', (_, screen) => {
     console.log(gradient.vice(screen));
-    console.log('       ' + gradient.cristal('by: Elizandro Dantas'), ' |  ' + gradient.cristal('v0.1.1'));
+    console.log('       ' + gradient.cristal('by: Elizandro Dantas'));
     console.log();
     start();
 });

@@ -3,6 +3,7 @@ import gradient from 'gradient-string';
 import figlet from 'figlet';
 
 import { BotBlazeWithTelegram } from '../src/index.mjs'
+import { _getColorNameOrEmoticon } from '../src/util/blaze.mjs';
 
 figlet('Blaze with Telegram', (_, screen) => {
     console.log(gradient.vice(screen));

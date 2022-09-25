@@ -1,13 +1,14 @@
 {
   "name": "bot-blaze-telegram",
-  "version": "0.1.35",
+  "version": "0.1.36",
   "author": "Elizandro Dantas <dantaspm@icloud.com>",
   "main": "src/index.mjs",
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "start": "node src/index.mjs",
-    "dev": "node __test__/bot.test.mjs"
+    "dev": "node __test__/bot.test.mjs",
+    "example:dotenv": "node example/example-with-dotenv.mjs",
+    "example": "node example/example-without-dotenv.mjs"
   },
   "dependencies": {
     "chalk": "^5.0.1",

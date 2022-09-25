@@ -414,6 +414,15 @@ BotBlazeWithTelegram.prototype.invokeResult = async function(data){
                 else
                     message = new Messages(StaticMessageWinAndLoss(data, this.bet));
 
+                if(this.options.timeAfterLoss){
+                    let { timeAfterLoss } = this.options,
+                        { message, time } = new Messages()._extractOfOption(timeAfterLoss);
+    
+                    this._timeNextBetSafe(time);
+                    if(isString(message))
+                        await this.telegram.send(message, process.env.ID_GROUP_MESSAGE);
+                }
+
                 await this.telegram.send(message.message, process.env.ID_GROUP_MESSAGE);
                 this._gale({ sequence: "reset" });
                 this._summary({ status: "loss", send: { sequence: "add" }});    
