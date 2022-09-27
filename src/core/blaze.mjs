@@ -8,11 +8,7 @@ import { EnvironmentVariablesError } from '../error/index.mjs';
  * type opções da função start
  * 
  * @typedef {object} IOptionStart
- * @property {boolean} needCloseWithCompletedSession
- * @property {boolean} requireNotRepeated
  * @property {number} timeoutSendingAliveSocket
- * @property {string} token
- * @property {"crash" | "doubles"} type
  */
 
 /**
@@ -59,12 +55,18 @@ export function BlazeCore(){
     }
 
     /**
-     * @private
      * @type {event}
      * @api private
      */
 
-    this.ev = new event.EventEmitter();
+     this.ev = new event.EventEmitter();
+
+     /**
+      * @type {IResponseStart}
+      * @api private
+      */
+ 
+     this.socket;
 }
 
 /**
@@ -87,15 +89,8 @@ BlazeCore.prototype.start = function(){
     if(typeof param0 !== "object") param0 = {}
 
     let { 
-        needCloseWithCompletedSession,
-        requireNotRepeated,
         timeoutSendingAliveSocket,
-        token,
-        type
      } = param0;
-    
-    if(typeof requireNotRepeated === "undefined") requireNotRepeated = true;
-    if(typeof type !== "string") type = "crash";
 
     let wss = new ws(process.env.URL_BLAZE, {
         origin: process.env.BASE_URL,
@@ -115,28 +110,38 @@ BlazeCore.prototype.start = function(){
     }, timeoutSendingAliveSocket || 5000);
 
     wss.on('open', () => {
-        this.onOpen(wss, this.ev, token, type);
+        this.onOpen(wss, this.ev);
     });
 
     wss.on('message', (data) => {
-        this.onMessage(data, wss, this.ev, requireNotRepeated, needCloseWithCompletedSession, interval);
+        this.onMessage(data, this.ev);
     });
 
     wss.on('close', (code, reason) => {
-        this.ev.emit('close', {
-            code,
-            reason: reason.toString()
-        });
+        console.log('closed', code, reason);
 
-        clearInterval(interval);
-        wss.close();
+        if(code !== 4999){
+            console.log('reestabelecendo conexeão')
+            setTimeout(() => {
+                this.start();
+            }, 2e3)
+        }else{
+            this.ev.emit('close', {
+                code,
+                reason: reason.toString()
+            });
+    
+            clearInterval(interval);
+            this.ev.removeAllListeners();
+            wss.close();
+        }
     });
 
-    return {
+    this.socket = {
         ev: this.ev,
         closeSocket: () => {
             clearInterval(interval);
-            wss.close();
+            wss.close(4999);
         },
         sendToSocket: (data) => {
             wss.send(data, () => {});
@@ -173,34 +178,17 @@ BlazeCore.prototype.recents = async function(){
  * @instance 
  * @param {ws} wss 
  * @param {event} ev 
- * @param {string?} token 
- * @param {"double" | "crash"} type 
  * @returns {void}
  * @api private
  */
 
-BlazeCore.prototype.onOpen = function(wss, ev, token, type){
-    if (type == 'crash') {
-        wss.send('423["cmd",{"id":"subscribe","payload":{"room":"crash"}}]')
-        wss.send('423["cmd",{"id":"subscribe","payload":{"room":"crash_v2"}}]')
-    }
-    else if (type == 'doubles') {
-        wss.send('423["cmd",{"id":"subscribe","payload":{"room":"double"}}]')
-        wss.send('423["cmd",{"id":"subscribe","payload":{"room":"double_v2"}}]')
-    }
-    if (token) {
-        wss.send(`423["cmd",{"id":"authenticate","payload":{"token":"${token}"}}]`)
-        wss.send(`422["cmd",{"id":"authenticate","payload":{"token":"${token}"}}]`)
-        wss.send(`420["cmd",{"id":"authenticate","payload":{"token":"${token}"}}]`)
-    }
+BlazeCore.prototype.onOpen = function(wss, ev){
+    wss.send('423["cmd",{"id":"subscribe","payload":{"room":"double"}}]')
+    wss.send('423["cmd",{"id":"subscribe","payload":{"room":"double_v2"}}]')
 
     ev.emit('authenticated', {
-        success: true,
-        subscribe: [
-            type == 'crash' ? 'crash' : 'double',
-            type == 'crash' ? 'crash_v2' : 'double_v2'
-        ]
-    })
+        success: true
+    });
 }
 
 /**
@@ -211,16 +199,12 @@ BlazeCore.prototype.onOpen = function(wss, ev, token, type){
  * @private
  * @instance
  * @param {any} data 
- * @param {ws} wss 
  * @param {EventEmitter} ev 
- * @param {boolean} requireNotRepeated 
- * @param {boolean} needCloseWithCompletedSession 
- * @param {NodeJS.Timer} interval
  * @returns {void} 
  * @api private
 */
 
-BlazeCore.prototype.onMessage = function(data, wss, ev, requireNotRepeated = false, needCloseWithCompletedSession, interval){
+BlazeCore.prototype.onMessage = function(data, ev){
     let msg = data.toString(), id;
 
     try {
@@ -229,7 +213,7 @@ BlazeCore.prototype.onMessage = function(data, wss, ev, requireNotRepeated = fal
         id = ''
     }
 
-    if (id == "crash.tick" || id == "double.tick" || id == 'crash.update' || id == 'doubles.update') {
+    if (id == "double.tick" || id == 'doubles.update') {
         let obj = msg.slice(2, msg.length),
             { payload: json } = JSON.parse(obj)[1],
             type = id.includes('update') ? 'v1' : 'v2',
@@ -241,41 +225,34 @@ BlazeCore.prototype.onMessage = function(data, wss, ev, requireNotRepeated = fal
         });
 
         if (json.status == 'graphing' || json.status == "rolling") {
-            if ((requireNotRepeated && !this.temp.isGraphingBefore) || !requireNotRepeated)
+            if (!this.temp.isGraphingBefore){
                 ev.emit('game_graphing', {
                     type,
                     game,
                     isRepeated: this.temp.isGraphingBefore,
                     ...json
                 });
-
-            if (!this.temp.isGraphingBefore) this._updateTemp('graphing');
-
+                this._updateTemp('graphing');
+            }
         } else if (json.status == 'waiting') {
-            if ((requireNotRepeated && !this.temp.isWaitingBefore) || !requireNotRepeated)
+            if (!this.temp.isWaitingBefore){
                 ev.emit('game_waiting', {
                     type,
                     game,
                     isRepeated: this.temp.isWaitingBefore,
                     ...json
                 });
-
-            if (!this.temp.isWaitingBefore) this._updateTemp('waiting');
-
+                this._updateTemp('waiting');
+            }
         } else {
-            if ((requireNotRepeated && !this.temp.isCompleteBefore) || !requireNotRepeated)
+            if (!this.temp.isCompleteBefore){
                 ev.emit('game_complete', {
                     type,
                     game,
                     isRepeated: this.temp.isCompleteBefore,
                     ...json
                 });
-
-            if (!this.temp.isCompleteBefore) this._updateTemp('complete');
-
-            if (needCloseWithCompletedSession) {
-                clearInterval(interval)
-                wss.close()
+                this._updateTemp('complete');
             }
         }
     }

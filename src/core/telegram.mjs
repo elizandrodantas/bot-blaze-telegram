@@ -77,7 +77,7 @@ Telegram.prototype.start = async function(){
                 return ;
             }
             
-            return ;
+            return next();
         });
 
         process.once("SIGINT", () => this.client.stop("SIGINT"));

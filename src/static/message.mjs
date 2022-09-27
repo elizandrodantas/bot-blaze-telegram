@@ -34,6 +34,6 @@ export const StaticMessageWinAndLoss = (current, betplayed, recents) => {
 
 export const StaticMessageGale = (current, betplayed, gale) => {
     return `⚠️ <b>ENTROU PRA GALE ${gale.sequence + 1}:</b>\n` +
-    `\nENTRE NO ${_getColorNameOrEmoticon(current.color, { emoticon: true })} ${_getColorNameOrEmoticon(current.color, { pt: true, upper: true })}` +
+    `\nENTRE NO ${_getColorNameOrEmoticon(betplayed.color, { emoticon: true })} ${_getColorNameOrEmoticon(betplayed.color, { pt: true, upper: true })}` +
     `\nPROTEJA NO ${_getColorNameOrEmoticon(0, { emoticon: true })} ${_getColorNameOrEmoticon(0, { pt: true, upper: true })}`;
 }

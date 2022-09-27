@@ -57,17 +57,17 @@ async function start(){
 
     process.on('SIGINT', () => {
         controllerBot.telegram.close();
-        controllerBot.socket.closeSocket();
+        controllerBot.blaze.socket.closeSocket();
         process.exit();
     });
     process.on('SIGQUIT', () => {
         controllerBot.telegram.close();
-        controllerBot.socket.closeSocket();
+        controllerBot.blaze.socket.closeSocket();
         process.exit();
     });
     process.on('SIGTERM', () => {
         controllerBot.telegram.close();
-        controllerBot.socket.closeSocket();
+        controllerBot.blaze.socket.closeSocket();
         process.exit();
     });
 }

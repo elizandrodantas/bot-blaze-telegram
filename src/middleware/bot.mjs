@@ -243,11 +243,6 @@ export function BotBlazeWithTelegram(options){
 
     /**
      * @api private
-     * @type {import('../core/blaze.mjs').IResponseStart}    */
-    this.socket;
-
-    /**
-     * @api private
      * @type {IConstructorClassDad} 
     */
     this.options = options;
@@ -278,26 +273,26 @@ export function BotBlazeWithTelegram(options){
  */
 
 BotBlazeWithTelegram.prototype.run = async function(){
-    this.socket = this.blaze.start({ type: "doubles" });
+    this.blaze.start({ type: "doubles" });
     await this.telegram.start();
 
-    this.socket.ev.on("game_waiting" , (data) => {
+    this.blaze.ev.on("game_waiting" , (data) => {
         console.log(chalk.cyan(`[${new Date().toLocaleString()}]`), chalk.yellow('status:'), 'players betting');
         this._summary({ verifyDate: true });
     });
 
-    this.socket.ev.on("game_graphing", (data) => {
-        console.log(chalk.cyan(`[${new Date().toLocaleString()}]`), chalk.yellow('status:'), 'round performed, result:', `[color: ${chalk.yellow(_getColorNameOrEmoticon(data.color, { pt: true }))} - roll: ${chalk.yellow(data.roll)}]`);
+    this.blaze.ev.on("game_graphing", (data) => {
+        data && console.log(chalk.cyan(`[${new Date().toLocaleString()}]`), chalk.yellow('status:'), 'round performed, result:', `[color: ${chalk.yellow(_getColorNameOrEmoticon(data.color, { pt: true }))} - roll: ${chalk.yellow(data.roll)}]`);
         this._summary({ verifyDate: true });
 
-        Promise.resolve([ this.invokeResult(data) ]);
+        data && Promise.resolve([ this.invokeResult(data) ]);
     });
 
-    this.socket.ev.on('game_complete', (data) => {
-        console.log(chalk.cyan(`[${new Date().toLocaleString()}]`), chalk.yellow('status:'), 'full round');
+    this.blaze.ev.on('game_complete', (data) => {
+        data && console.log(chalk.cyan(`[${new Date().toLocaleString()}]`), chalk.yellow('status:'), 'full round');
         this._summary({ verifyDate: true });
 
-        Promise.resolve([ this.invokeAnalyst(data) ]);
+        data && Promise.resolve([ this.invokeAnalyst(data) ]);
     });
 }
 
@@ -391,7 +386,7 @@ BotBlazeWithTelegram.prototype.invokeResult = async function(data){
                 this._gale({ sequence: "add" });
                 this._updateBet("gale");
             }else if(this.bet.phase.indexOf('gale') === 0){   
-                if(this.gale.sequence + 1 >= this.options.gale){
+                if(this.gale.sequence >= this.options.gale){
                     this._updateBet('loss');
                     return this.invokeResult(data);
                 }

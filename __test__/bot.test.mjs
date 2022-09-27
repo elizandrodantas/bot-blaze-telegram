@@ -45,7 +45,7 @@ controller.run();
 
 process.on('SIGINT', () => {
     controller.telegram.close();
-    controller.socket.closeSocket();
+    controller.blaze.socket.closeSocket();
     process.exit();
 });  // CTRL + C
 process.on('SIGQUIT', () => {}); // Keyboard quit

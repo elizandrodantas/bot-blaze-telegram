@@ -5,6 +5,7 @@ import gradient from 'gradient-string';
 import figlet from 'figlet';
 
 import { BotBlazeWithTelegram } from '../src/index.mjs'
+import { _getColorNameOrEmoticon } from '../src/util/blaze.mjs';
 
 figlet('Blaze with Telegram', (_, screen) => {
     console.log(gradient.vice(screen));
@@ -57,17 +58,17 @@ async function start(){
 
     process.on('SIGINT', () => {
         controllerBot.telegram.close();
-        controllerBot.socket.closeSocket();
+        controllerBot.blaze.socket.closeSocket();
         process.exit();
     });
     process.on('SIGQUIT', () => {
         controllerBot.telegram.close();
-        controllerBot.socket.closeSocket();
+        controllerBot.blaze.socket.closeSocket();
         process.exit();
     });
     process.on('SIGTERM', () => {
         controllerBot.telegram.close();
-        controllerBot.socket.closeSocket();
+        controllerBot.blaze.socket.closeSocket();
         process.exit();
     });
 }
