@@ -118,10 +118,7 @@ BlazeCore.prototype.start = function(){
     });
 
     wss.on('close', (code, reason) => {
-        console.log('closed', code, reason);
-
         if(code !== 4999){
-            console.log('reestabelecendo conexeão')
             setTimeout(() => {
                 this.start();
             }, 2e3)

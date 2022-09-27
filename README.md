@@ -21,10 +21,12 @@ O objetivo deste bot é enviar, após uma [analise](#analise), sinais do resulta
 
 <p align="right"><a href="#topo">topo</a></p>
 
-## Novidades (v0.1.35)
+## Novidades (v0.1.37)
 
-1. Opção de mensagens personalizadas;
-2. Opção de quantidades de gales;
+* Correção de bugs:
+    - Travamento da blaze;
+    - Tempo no loss;
+    - Mensagem estática de gale.
 
 <p align="right"><a href="#topo">topo</a></p>
 
@@ -261,7 +263,7 @@ type ICBCurrentAndPlayedAndGale = (currentPlay: IDataBlazeResponse, betplayed: I
         // cb - envio de mensagens sobressalentes .:. ex: cb('test callback');
 
         return `⚠️ <b>ENTROU PRA GALE ${gale.sequence + 1}:</b>\n` +
-            `\nENTRE NO ${_getColorNameOrEmoticon(current.color, { emoticon: true })} ${_getColorNameOrEmoticon(current.color, { pt: true, upper: true })}` +
+            `\nENTRE NO ${_getColorNameOrEmoticon(betplayed.color, { emoticon: true })} ${_getColorNameOrEmoticon(betplayed.color, { pt: true, upper: true })}` +
             `\nPROTEJA NO ${_getColorNameOrEmoticon(0, { emoticon: true })} ${_getColorNameOrEmoticon(0, { pt: true, upper: true })}`;
     },
 
