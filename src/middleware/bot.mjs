@@ -258,8 +258,8 @@ export function BotBlazeWithTelegram(options){
 
     this.cb = (message) => this.telegram.send(message, process.env.ID_GROUP_MESSAGE); 
 
-    if(Boolean(options?.summaryOfResult.interval))
-        this._summary({ send: { rule: Number(options?.summaryOfResult.interval )}});
+    if(Boolean(options?.summaryOfResult))
+        this._summary({ send: { rule: Number(options?.summaryOfResult.interval || 1 )}});
 }
 
 /**
