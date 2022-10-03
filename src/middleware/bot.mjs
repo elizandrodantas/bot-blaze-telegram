@@ -281,18 +281,18 @@ BotBlazeWithTelegram.prototype.run = async function(){
         this._summary({ verifyDate: true });
     });
 
-    this.blaze.ev.on("game_graphing", (data) => {
+    this.blaze.ev.on("game_graphing", async (data) => {
         data && console.log(chalk.cyan(`[${new Date().toLocaleString()}]`), chalk.yellow('status:'), 'round performed, result:', `[color: ${chalk.yellow(_getColorNameOrEmoticon(data.color, { pt: true }))} - roll: ${chalk.yellow(data.roll)}]`);
         this._summary({ verifyDate: true });
 
-        data && Promise.resolve([ this.invokeResult(data) ]);
+        data && await this.invokeResult(data);
     });
 
-    this.blaze.ev.on('game_complete', (data) => {
+    this.blaze.ev.on('game_complete', async (data) => {
         data && console.log(chalk.cyan(`[${new Date().toLocaleString()}]`), chalk.yellow('status:'), 'full round');
         this._summary({ verifyDate: true });
 
-        data && Promise.resolve([ this.invokeAnalyst(data) ]);
+        data && await this.invokeAnalyst(data);
     });
 }
 
