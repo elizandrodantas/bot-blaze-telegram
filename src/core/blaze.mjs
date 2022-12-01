@@ -184,6 +184,18 @@ BlazeCore.prototype.recents = async function(){
     }
 }
 
+/**
+ * ### gera jogadas recents com o server seed
+ * 
+ * @method recents
+ * @memberof BlazeCore
+ * @interface
+ * @param {string} server_seed 
+ * @param {length} [length=40] 
+ * @return {{color: number, roll: number}[]}
+ * @api public
+ */
+
 BlazeCore.prototype.generateRecents = function(server_seed, length = 40){
     const chain = [server_seed],
         output = [];
@@ -202,7 +214,7 @@ BlazeCore.prototype.generateRecents = function(server_seed, length = 40){
             .digest("hex");
 
         const roll = parseInt(hash, 16) % 15;
-        
+    
         output.push(
             this.TILES.find(e => e.roll === roll)
         )
