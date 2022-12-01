@@ -1,16 +1,10 @@
 import { Analise, BlazeCore, Telegram } from '../core/index.mjs';
 import chalk from 'chalk';
-import { question } from 'readline-sync';
-import { setVariable, isNumber, isString, random, isFunction, _getColorNameOrEmoticon } from '../util/index.mjs';
+import { setVariable, isNumber, isString, random, isFunction, _getColorNameOrEmoticon, Question } from '../util/index.mjs';
 import { StaticMessageEnterBet, StaticMessageGale, StaticMessageWinAndLoss } from '../static/index.mjs';
 import { Messages } from '../structure/index.mjs';
+import staticQuestion from '../static/question.mjs';
 
-const { 
-    ID_GROUP_MESSAGE,
-    URL_BLAZE,
-    BASE_URL,
-    BOT_TOKEN
-} = process.env;
 
 /**
  * opções de uso do bot
@@ -162,46 +156,39 @@ const {
  */
 
 export function BotBlazeWithTelegram(options){
-    if(!URL_BLAZE){
-        let VALUE = question(`${chalk.red("[!required]")} Digite URL WSS da blaze: [${chalk.cyan("wss://api-v2.blaze.com/replication/?EIO=3&transport=websocket")}] `, {
-            defaultInput: "wss://api-v2.blaze.com/replication/?EIO=3&transport=websocket",
-            validate: (value) => value.indexOf("wss://") && value.match(/blaze.com/g)
-        });
 
-        setVariable('URL_BLAZE', VALUE);
+    // required environment variables
+
+    const requiredEnvironmentVariables = [
+        // "URL_BLAZE",
+        // "BASE_URL",
+        "BOT_TOKEN",
+        "ID_GROUP_MESSAGE"
+    ];
+
+    for(let variable of requiredEnvironmentVariables){
+        if(!process.env[variable]){
+            const staticValue = staticQuestion[variable];
+            if(staticValue?.text){
+                /** @type {import('../util/question.mjs').iOptionsQuestionClass} */
+                const questionOptions = {};
+
+                console.log(va)
+
+                staticValue?.validate && (questionOptions.validation = staticValue.validate);
+                staticValue?._default && (questionOptions.default = staticValue._default);
+
+                const VALUE = Question.text(staticValue?.text, questionOptions);
+                console.log(VALUE)
+                if(!VALUE){
+                    console.log(chalk.red(`[${variable}]`), "VALIDAÇÃO INVALIDA");
+                    process.exit();
+                }
+
+                setVariable(variable, VALUE);
+            }
+        }
     }
-        
-
-    if(!BASE_URL){
-        let VALUE = question(`${chalk.red("[!required]")} Digite URL HTTP da blaze: [${chalk.cyan("https://blaze.com")}] `, {
-            defaultInput: "https://blaze.com",
-            validate: (value) => value.indexOf("https://") && value.match(/blaze.com/g)
-        });
-
-        setVariable('BASE_URL', VALUE);
-    }
-
-    if(!BOT_TOKEN){
-        let VALUE = question(`${chalk.red("[!required]")} Token do BOT TELEGRAM: [${chalk.cyan("00000000:ad4f6a77...")}] `, {
-            validate: (value) => value.split(/:/g).length === 2
-        });
-
-        setVariable('BOT_TOKEN', VALUE);
-    }
-        
-
-    if(!ID_GROUP_MESSAGE){
-        let VALUE = question(`${chalk.red("[!required]")} ID GRUP/CHANNEL/CHAT que ira receber os sinais: [${chalk.cyan("-999999999")}] `, {
-            validate: (value) => value
-        });
-
-        setVariable('ID_GROUP_MESSAGE', VALUE);
-    }
-
-    if(isString(options.refBlaze))
-        setVariable('REF', options.refBlaze);
-    else
-        setVariable('REF', "dZONo");
 
     /** @api private */
     this.telegram = new Telegram();
