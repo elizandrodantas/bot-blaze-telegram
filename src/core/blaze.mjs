@@ -1,8 +1,7 @@
 import event from 'node:events';
 import ws from 'ws';
 import request from 'request-promise';
-
-import { EnvironmentVariablesError } from '../error/index.mjs';
+import { createHash, createHmac } from 'node:crypto';
 
 /**
  * type opções da função start
@@ -67,6 +66,28 @@ export function BlazeCore(){
       */
  
      this.socket;
+
+     /** @type {} */
+
+     this.TILES = [
+        { roll: 0, color: 0 },
+        { roll: 11, color: 2 },
+        { roll: 5, color: 1 },
+        { roll: 10, color: 2 },
+        { roll: 6, color: 1 },
+        { roll: 9, color: 2 },
+        { roll: 7, color: 1 },
+        { roll: 8, color: 2 },
+        { roll: 1, color: 1 },
+        { roll: 14, color: 2 },
+        { roll: 2, color: 1 },
+        { roll: 13, color: 2 },
+        { roll: 3, color: 1 },
+        { roll: 12, color: 2 },
+        { roll: 4, color: 1 }
+    ]
+
+    this.clientSeed = "0000000000000000002aeb06364afc13b3c4d52767e8c91db8cdb39d8f71e8dd";
 }
 
 /**
@@ -81,9 +102,6 @@ export function BlazeCore(){
  */
 
 BlazeCore.prototype.start = function(){
-    if(!process.env.URL_BLAZE || !process.env.BASE_URL)
-        throw new EnvironmentVariablesError("URL BLAZE or BASE_URL");
-
     let [ param0 ] = arguments;
 
     if(typeof param0 !== "object") param0 = {}
@@ -92,8 +110,8 @@ BlazeCore.prototype.start = function(){
         timeoutSendingAliveSocket,
      } = param0;
 
-    let wss = new ws(process.env.URL_BLAZE, {
-        origin: process.env.BASE_URL,
+    let wss = new ws("wss://api-v2.blaze.com/replication/?EIO=3&transport=websocket", {
+        origin: "https://blaze.com",
         headers: {
             'Upgrade': 'websocket',
             'Sec-Webscoket-Extensions': 'permessage-defalte; client_max_window_bits',
@@ -158,12 +176,39 @@ BlazeCore.prototype.start = function(){
 
 BlazeCore.prototype.recents = async function(){
     try{
-        let data = await request.get(process.env.BASE_URL + "/api/roulette_games/recent", { json: true });
+        let data = await request.get("https://blaze.com/api/roulette_games/recent", { json: true });
 
         return { status: true, error: null, response: data }
     }catch(err){
         return { status: false, error: err.message }
     }
+}
+
+BlazeCore.prototype.generateRecents = function(server_seed, length = 40){
+    const chain = [server_seed],
+        output = [];
+
+    for(let i = 0; i < length; i++){
+        chain.push(
+            createHash('sha256')
+                .update(chain[chain.length - 1])
+                .digest("hex")
+        );
+    }
+
+    for(let i of chain){
+        const hash = createHmac('sha256', i)
+            .update(this.clientSeed)
+            .digest("hex");
+
+        const roll = parseInt(hash, 16) % 15;
+        
+        output.push(
+            this.TILES.find(e => e.roll === roll)
+        )
+    }
+
+    return output;
 }
 
 /**
