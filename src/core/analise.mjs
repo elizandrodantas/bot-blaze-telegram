@@ -1,4 +1,4 @@
-import { isArray, isNumber, isObject, isString, isUndefined } from "../util/validations.mjs";
+import { isArray, isBoolean, isNumber, isObject, isString, isUndefined } from "../util/validations.mjs";
 import { BlazeCore } from '../core/blaze.mjs';
 import { getColorWithRoll, getRollRandomWithColor, transformStringToNumberColor } from "../util/blaze.mjs";
 
@@ -81,7 +81,7 @@ export class Analise {
             for(let i of analysis){
                 let data = this.proccessOfAnalysis(i);
 
-                if(data.status === "success" && data.entry == true){
+                if(data.status === "success" && isBoolean(data.entry)){
                     output = data;
                     break;
                 }
@@ -91,7 +91,7 @@ export class Analise {
         if(isObject(analysis)){
             let data = this.proccessOfAnalysis(analysis);
 
-            if(data.status === "success" && data.entry == true)
+            if(data.status === "success" && isBoolean(data.entry))
                 output = data;
         }
 
@@ -149,7 +149,7 @@ export class Analise {
         if(!entry)
             return {
                 status: 'success',
-                entry: failse
+                entry: false
             }
 
         const outputLast = this.#treatEntry(entryColor, entryRoll, recents.slice(startSearchOf, recents.length));
