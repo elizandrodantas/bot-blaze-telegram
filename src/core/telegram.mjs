@@ -53,7 +53,7 @@ export function Telegram(){
  * ### função de inicialização da api telegram
  * 
  * @method start
- * @member Telegram
+ * @memberof Telegram
  * @instance
  * @returns {Promise<void>}
  * @api public
@@ -65,7 +65,7 @@ Telegram.prototype.start = async function(){
         await this.client.launch();
         this.status = "on";
         
-        startingOra.succeed("bot iniciado com sucesso");
+        startingOra.succeed("bot iniciado com sucesso :)");
 
         this.client.use(async (ctx, next) => {
             let { type, id } = await ctx.getChat();
@@ -80,11 +80,41 @@ Telegram.prototype.start = async function(){
             return next();
         });
 
+        await this.checkChatId();
+
         process.once("SIGINT", () => this.client.stop("SIGINT"));
         process.once("SIGTERM", () => this.client.stop("SIGTERM"));
     }catch(err){
-        startingOra.fail("erro ao startar bot");
-        throw new Error(`erro ao startar bot: [${err.message}]`);
+        startingOra.fail("não foi possivel iniciar o bot, verifique se o token esta correto e tente novamente :(");
+        process.exit();
+    }
+}
+
+/**
+ * ### função verifica se o chat_id esta correto e se o bot tem permisão de enviar mensagem
+ * 
+ * @method checkChatId
+ * @memberof Telegram
+ * @instance
+ * @return {Promise<void>}
+ * @api public
+ */
+
+Telegram.prototype.checkChatId = async function(){
+    const checkStatus = ora('verificando chat_id').start();
+    try{
+        if(this.status !== "on"){
+            checkStatus.fail("o bot ainda não foi iniciado :(");
+            process.exit();
+        }
+
+        let messageCheck = await this.client.telegram.sendMessage(process.env.ID_GROUP_MESSAGE, 'checked group with chat_id');
+        this.client.telegram.deleteMessage(process.env.ID_GROUP_MESSAGE, messageCheck.message_id);
+
+        checkStatus.succeed('tudo certo com o chat_id :)');
+    }catch(err){
+        checkStatus.fail('chat id invalido ou o bot não tem permisão para enviar mensagem :(');
+        process.exit();
     }
 }
 

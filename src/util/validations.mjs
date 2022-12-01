@@ -22,3 +22,7 @@ export function isBoolean(boolean){
 export function isFunction(fun){
     return typeof fun === "function";
 }
+
+export function isUndefined(value){
+    return typeof value === "undefined";
+}

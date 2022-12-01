@@ -79,7 +79,6 @@ import staticQuestion from '../static/question.mjs';
  * @property {number} color
  * @property {number} roll
  * @property {boolean} jump
- * @property {string} id
  */
 
 /**
@@ -196,8 +195,8 @@ export function BotBlazeWithTelegram(options){
     /** @api private */
     this.blaze = new BlazeCore();
 
-    /** @api private */
-    this.analise = new Analise();
+    // /** @api private */
+    // this.analise = new Analise();
 
     /** @api private */
     this.summaryPlays = {
@@ -239,8 +238,7 @@ export function BotBlazeWithTelegram(options){
         phase: "pause",
         jump: null,
         color: null,
-        roll: null,
-        id: null
+        roll: null
     }
 
     this.cb = (message) => this.telegram.send(message, process.env.ID_GROUP_MESSAGE); 
@@ -300,11 +298,11 @@ BotBlazeWithTelegram.prototype.invokeAnalyst = async function(){
     
     if(!status || !response) return { status: "error", message: error }
 
-    let { verify, last, recents } = this.analise.last({status: true, response});
+    let { recents, entry, last } = Analise.withLast({ status, response });
 
-    if(verify){
+    if(entry){
         if(this.bet.color === null){
-            this._updateBet('bet', true, last.color, last.roll, last.id);
+            this._updateBet('bet', true, last.color, last.roll);
 
             if(isFunction(this.options?.messageEnterBet))
                 return this.telegram.send(new Messages(this.options.messageEnterBet(last, recents, this.cb)).message, process.env.ID_GROUP_MESSAGE);
@@ -441,17 +439,15 @@ BotBlazeWithTelegram.prototype._resetBet = function(){
  * @param {boolean} jump 
  * @param {number} color 
  * @param {number} roll 
- * @param {string} id 
  * @returns {void}
  * @api private
  */
 
-BotBlazeWithTelegram.prototype._updateBet = function(phase, jump, color, roll, id){
+BotBlazeWithTelegram.prototype._updateBet = function(phase, jump, color, roll){
     if(typeof phase !== "undefined") this.bet.phase = phase;
     if(typeof jump !== "undefined") this.bet.jump = jump;
     if(typeof color !== "undefined") this.bet.color = color;
     if(typeof roll !== "undefined") this.bet.roll = roll;
-    if(typeof id !== "undefined") this.bet.id = id;
 }
 
 /**

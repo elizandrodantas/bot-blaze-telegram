@@ -32,7 +32,7 @@ import { createHash, createHmac } from 'node:crypto';
  * @typedef {object} IResponseRecents
  * @property {boolean} status
  * @property {any | null} error
- * @property {IDataBlazeResponse} response
+ * @property {IDataBlazeResponse[]} response
  */
 
 /**
