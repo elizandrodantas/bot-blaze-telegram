@@ -225,7 +225,7 @@ Telegram.prototype.sendIn = async function(color, clientId, protection = false, 
     message.push(`ENTRE NO ${this._getColorNameOrEmoticon(color, true)} ${this._getColorNameOrEmoticon(color, false, true)}`);
     if(typeof protection === "number")
         message.push(`PROTEJA NO ${this._getColorNameOrEmoticon(protection, true)} ${this._getColorNameOrEmoticon(protection, false, true)}`);
-    message.push(`\n<pre>https://blaze.com/${process.env.REF ? "r/" + process.env.REF : ""}</pre>`);
+    message.push(`\n<pre>https://blaze.com/</pre>`);
 
     return await this.send(message.join('\n'), clientId, { parse_mode: "HTML" } );
 }
