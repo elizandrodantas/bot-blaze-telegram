@@ -71,7 +71,8 @@ export class Analise {
 
     /**
      * 
-     * @param {IAnalysisKitten[] | IAnalysisKitten} analysis 
+     * @param {IAnalysisKitten[] | IAnalysisKitten} analysis
+     * @return {{ status: 'fail' | 'success', message: string, entry: boolean }}
      */
 
     process(analysis){
@@ -107,28 +108,28 @@ export class Analise {
 
     /**
      * 
-     * @param {IAnalysisKitten} analysis 
+     * @param {IAnalysisKitten} analysis
+     * @return {{ status: string, message: string, last: IColorOrRoll, recents: import("./blaze.mjs").IResponseRecents, entry: boolean }}
      */
 
     proccessOfAnalysis(analysis){
         let { entryColor, entryRoll, search, startSearchOf } = analysis,
-            { response } = this.recents,
             blazeClient = new BlazeCore();
 
-        if(!search || !this.recents?.response)
+        if(!search || !this.recents)
             return {
                 status: 'fail',
                 message: 'parametros para analise incorretos'
             }        
             
-        let recents = response;
+        let recents = this.recents;
         
         if(!startSearchOf || (startSearchOf && !isNumber(startSearchOf)))
             startSearchOf = 0;
 
         if(startSearchOf && startSearchOf > 0){
             if((startSearchOf + search.length) > recents.length){
-                recents = blazeClient.generateRecents(response[0].server_seed, Math.floor((startSearchOf + search.length) * 1.1));
+                recents = blazeClient.generateRecents(this.recents[0].server_seed, Math.floor((startSearchOf + search.length) * 1.1));
             }
         }
 
