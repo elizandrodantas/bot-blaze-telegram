@@ -5,20 +5,12 @@ import { _getColorNameOrEmoticon } from '../src/util/index.mjs';
 console.log(`pid: ${process.pid}`)
 
 let controller = new BotBlazeWithTelegram({
-    // timeAfterWin: {
-    //     // message: "Tempo para analise apos win",
-    //     time: 1
-    // },
     sticker: {
         win: "win.jpg",
         winGale: "win-in-gale.jpg",
         winWhite: "win-white.jpg",
         loss: "loss.jpg",
     },
-    // timeAfterLoss: {
-    //     time: 1,
-    //     message: "Tempo para analise apos loss"
-    // },
     summaryOfResult: {
         interval: 1,
         message: (number) => {
@@ -30,18 +22,23 @@ let controller = new BotBlazeWithTelegram({
         }
     },
     messageEnterBet: (current, recents, cb) => {
-        // cb('test callback');
-
         return "🔎 <b>SINAL ENCONTRADO:</b>\n" +
             `\nENTRE NO ${_getColorNameOrEmoticon(current.color, { emoticon: true })} ${_getColorNameOrEmoticon(current.color, { pt: true, upper: true })}` +
             `\nPROTEJA NO ${_getColorNameOrEmoticon(0, { emoticon: true })} ${_getColorNameOrEmoticon(0, { pt: true, upper: true })}` +
             `\n\n<pre>https://blaze.com/</pre>`;
     },
-    gale: 1
+    gale: 2,
+    // analysis: {
+    //     entryColor: "red",
+    //     search: [
+    //         { color: "red" },
+    //         // { color: "red" },
+    //         { color: "black" }
+    //     ]
+    // }
  });
 
 controller.run();
-// controller.
 
 process.on('SIGINT', () => {
     controller.telegram.close();

@@ -19,9 +19,7 @@
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "telegraf": "^4.8.6",
-    "ws": "^8.8.1"
-  },
-  "devDependencies": {
+    "ws": "^8.8.1",
     "dotenv": "^16.0.1"
   }
 }

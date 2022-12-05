@@ -1,6 +1,6 @@
 import { Analise, BlazeCore, Telegram } from '../core/index.mjs';
 import chalk from 'chalk';
-import { setVariable, isNumber, isString, random, isFunction, _getColorNameOrEmoticon, Question } from '../util/index.mjs';
+import { setVariable, isNumber, isString, random, isFunction, _getColorNameOrEmoticon, Question, isBoolean } from '../util/index.mjs';
 import { StaticMessageEnterBet, StaticMessageGale, StaticMessageWinAndLoss } from '../static/index.mjs';
 import { Messages } from '../structure/index.mjs';
 import staticQuestion from '../static/question.mjs';
@@ -20,6 +20,7 @@ import staticQuestion from '../static/question.mjs';
  * @property {ICBCurrentAndPlayed} messageWin - mensagem de win
  * @property {ICBCurrentAndPlayedAndGale} messageOfGale - mensagem de gale .:. se gale ativo
  * @property {ICBCurrentAndPlayed} messageLoss - mensagem de loss
+ * @property {import('../core/analise.mjs').IAnalysisKitten} analysis
  * 
  */
 
@@ -159,8 +160,6 @@ export function BotBlazeWithTelegram(options){
     // required environment variables
 
     const requiredEnvironmentVariables = [
-        // "URL_BLAZE",
-        // "BASE_URL",
         "BOT_TOKEN",
         "ID_GROUP_MESSAGE"
     ];
@@ -171,14 +170,10 @@ export function BotBlazeWithTelegram(options){
             if(staticValue?.text){
                 /** @type {import('../util/question.mjs').iOptionsQuestionClass} */
                 const questionOptions = {};
-
-                console.log(va)
-
                 staticValue?.validate && (questionOptions.validation = staticValue.validate);
                 staticValue?._default && (questionOptions.default = staticValue._default);
 
                 const VALUE = Question.text(staticValue?.text, questionOptions);
-                console.log(VALUE)
                 if(!VALUE){
                     console.log(chalk.red(`[${variable}]`), "VALIDAÇÃO INVALIDA");
                     process.exit();
@@ -298,7 +293,31 @@ BotBlazeWithTelegram.prototype.invokeAnalyst = async function(){
     
     if(!status || !response) return { status: "error", message: error }
 
-    let { recents, entry, last } = Analise.withLast({ status, response });
+    if(!status){
+        console.log(chalk.red('[*]'), "erro ao buscar resultados recentes");
+        return;
+    }
+
+    let recents, entry, last;
+
+    if(!this.options?.analysis){
+        const old = Analise.withLast(recents);
+
+        isBoolean(old?.entry) && (entry = old.entry);
+        old?.recents && (recents = old.recents);
+        old?.last && (last = old.last);
+    }else{
+        const _new = new Analise(response).process(this.options.analysis);
+        
+        if(_new.status === "fail"){
+            console.log(chalk.red('[*]'), "erro na analise modular", `[${_new?.message}]`);
+            return;
+        }else{
+            isBoolean(_new?.entry) && (entry = _new?.entry);
+            _new?.recents && (recents = _new.recents);
+            _new?.last && (last = _new.last);
+        }
+    }
 
     if(entry){
         if(this.bet.color === null){

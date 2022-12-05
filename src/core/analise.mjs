@@ -10,7 +10,7 @@ import { getColorWithRoll, getRollRandomWithColor, transformStringToNumberColor 
 
 /**
  * @typedef {object} IAnalysisKitten
- * @property {IColorOrRoll[] | IColorOrRoll} search - array/numero rodada/cor que o gatilho ira identificar entrada
+ * @property {IColorOrRoll[]} search - array/numero rodada/cor que o gatilho ira identificar entrada
  * @property {number} startSearchOf - quantas rodadas ira pular para procurar gatilho (padrão: 0 - ultima rodada)
  * @property {number | string} entryColor - cor de entrada
  * @property {number} entryRoll - numero da rodada de entrada
@@ -39,32 +39,27 @@ export class Analise {
 
     /**
      * 
-     * @param {import("./blaze.mjs").IResponseRecents} recents 
+     * @param {import("./blaze.mjs").IDataBlazeResponse[]} recents 
      */    
     constructor(recents){
         this.recents = recents;
     }
 
-    
 
     /**
      * 
-     * @param {import("./blaze.mjs").IResponseRecents} recents 
+     * @param {import("./blaze.mjs").IDataBlazeResponse[]} recents 
      * @returns {IResponseLastAnalise}
      */
 
     static withLast(recents){
-        const { status, response } = recents;
-
-        if(!status) return { status: 'error', message: 'error' }
-
-        const lastNeed = response.slice(0, 16), lastAccept = lastNeed[lastNeed.length - 1],
+        const lastNeed = recents.slice(0, 16), lastAccept = lastNeed[lastNeed.length - 1],
             rule = [ 1,2,3,4,5,6,7,8,9,10,11,12,13,14 ];
 
         return {
             status: 'success',
             last: lastAccept,
-            recents: response,
+            recents: recents,
             entry: rule.includes(lastAccept.roll)
         }
     }
@@ -109,7 +104,7 @@ export class Analise {
     /**
      * 
      * @param {IAnalysisKitten} analysis
-     * @return {{ status: string, message: string, last: IColorOrRoll, recents: import("./blaze.mjs").IResponseRecents, entry: boolean }}
+     * @return {{ status: string, message: string, last: IColorOrRoll, recents: import("./blaze.mjs").IDataBlazeResponse[], entry: boolean }}
      */
 
     proccessOfAnalysis(analysis){
@@ -133,19 +128,16 @@ export class Analise {
             }
         }
 
-        if(!isObject(search) && !isArray(search))
+        if(!isArray(search))
             return {
                 status: 'fail',
-                message: 'search deve ser um objeto ou um array de objeto'
+                message: 'search deve ser um array'
             }
 
         let entry = false;
 
         if(isArray(search))
             entry = this.#searchArrayAnalysis(search, recents.slice(startSearchOf, recents.length));
-
-        if(isObject(search))
-            entry = this.#searchObjAnalysis(search, recents.slice(startSearchOf, recents.length)[0]);
     
         if(!entry)
             return {
@@ -218,6 +210,7 @@ export class Analise {
      * @param {IColorOrRoll} obj 
      * @param {import("./blaze.mjs").IDataBlazeResponse} recents 
      * @return {boolean}
+     * @deprecated
      */
 
     #searchObjAnalysis(obj, recents){
