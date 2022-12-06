@@ -301,7 +301,7 @@ BotBlazeWithTelegram.prototype.invokeAnalyst = async function(){
     let recents, entry, last;
 
     if(!this.options?.analysis){
-        const old = Analise.withLast(recents);
+        const old = Analise.withLast(response);
 
         isBoolean(old?.entry) && (entry = old.entry);
         old?.recents && (recents = old.recents);
