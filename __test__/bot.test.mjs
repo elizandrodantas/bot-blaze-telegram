@@ -28,14 +28,33 @@ let controller = new BotBlazeWithTelegram({
             `\n\n<pre>https://blaze.com/</pre>`;
     },
     gale: 2,
-    // analysis: {
-    //     entryColor: "red",
-    //     search: [
-    //         { color: "red" },
-    //         // { color: "red" },
-    //         { color: "black" }
-    //     ]
-    // }
+    analysis: [
+        {
+            entryColor: "black",
+            search: [
+                { color: "red" },
+                { color: "black" },
+                { color: "red" },
+                { color: "black" },
+            ]
+        },
+        {
+            entryColor: "red",
+            search: [
+                { color: "black" },
+                { color: "red" },
+                { color: "red" },
+                { color: "black" },
+            ]
+        },
+        {
+            entryColor: "red",
+            search: [
+                { color: "red" },
+                { color: "black" },
+            ]
+        }
+    ]
  });
 
 controller.run();

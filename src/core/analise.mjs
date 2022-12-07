@@ -10,7 +10,7 @@ import { getColorWithRoll, getRollRandomWithColor, transformStringToNumberColor 
 
 /**
  * @typedef {object} IAnalysisKitten
- * @property {IColorOrRoll[]} search - array/numero rodada/cor que o gatilho ira identificar entrada
+ * @property {[IColorOrRoll]} search - array/numero rodada/cor que o gatilho ira identificar entrada
  * @property {number} startSearchOf - quantas rodadas ira pular para procurar gatilho (padrão: 0 - ultima rodada)
  * @property {number | string} entryColor - cor de entrada
  * @property {number} entryRoll - numero da rodada de entrada
@@ -77,24 +77,25 @@ export class Analise {
             for(let i of analysis){
                 let data = this.proccessOfAnalysis(i);
 
-                if(data.status === "success" && isBoolean(data.entry)){
+                if(data.status === "success" && data.entry === true){
                     output = data;
                     break;
                 }
             }
+
         }
 
         if(isObject(analysis)){
             let data = this.proccessOfAnalysis(analysis);
 
-            if(data.status === "success" && isBoolean(data.entry))
+            if(data.status === "success" && data.entry === true)
                 output = data;
         }
 
         if(!output)
-            return {
-                status: 'fail',
-                message: 'nenhum gatilho encontrado'
+            output = {
+                status: "success",
+                entry: false
             }
         
         return output
