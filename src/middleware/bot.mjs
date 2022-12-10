@@ -20,7 +20,7 @@ import staticQuestion from '../static/question.mjs';
  * @property {ICBCurrentAndPlayed} messageWin - mensagem de win
  * @property {ICBCurrentAndPlayedAndGale} messageOfGale - mensagem de gale .:. se gale ativo
  * @property {ICBCurrentAndPlayed} messageLoss - mensagem de loss
- * @property {import('../core/analise.mjs').IAnalysisKitten} analysis
+ * @property {import('../core/analise.mjs').IAnalysisKitten} analysis - opção de analise personalizada
  * 
  */
 
@@ -298,7 +298,7 @@ BotBlazeWithTelegram.prototype.invokeAnalyst = async function(){
         return;
     }
 
-    let recents, entry, last;
+    let recents, entry, last, play;
 
     if(!this.options?.analysis){
         const old = Analise.withLast(response);
@@ -306,27 +306,29 @@ BotBlazeWithTelegram.prototype.invokeAnalyst = async function(){
         isBoolean(old?.entry) && (entry = old.entry);
         old?.recents && (recents = old.recents);
         old?.last && (last = old.last);
+        old?.play && (play = old.play);
     }else{
         const _new = new Analise(response).process(this.options.analysis);
         
-        if(_new.status === "fail"){
+        if(_new.status !== "success"){
             console.log(chalk.red('[*]'), "erro na analise modular", `[${_new?.message}]`);
             return;
         }else{
             isBoolean(_new?.entry) && (entry = _new?.entry);
             _new?.recents && (recents = _new.recents);
             _new?.last && (last = _new.last);
+            _new?.play && (play = _new.play);
         }
     }
 
-    if(entry){
+    if(entry && play){
         if(this.bet.color === null){
-            this._updateBet('bet', true, last.color, last.roll);
+            this._updateBet('bet', true, play.color, play.roll);
 
             if(isFunction(this.options?.messageEnterBet))
-                return this.telegram.send(new Messages(this.options.messageEnterBet(last, recents, this.cb)).message, process.env.ID_GROUP_MESSAGE);
+                return this.telegram.send(new Messages(this.options.messageEnterBet(play, recents, this.cb)).message, process.env.ID_GROUP_MESSAGE);
 
-            return this.telegram.send(new Messages(StaticMessageEnterBet(last, recents)).message, process.env.ID_GROUP_MESSAGE);
+            return this.telegram.send(new Messages(StaticMessageEnterBet(play, recents)).message, process.env.ID_GROUP_MESSAGE);
         }
     }else{ }
 }

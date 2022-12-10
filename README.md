@@ -15,18 +15,14 @@ O objetivo deste bot é enviar, após uma [analise](#analise), sinais do resulta
 **❤️ Donation ❤️:** `ce71c8ba-4c42-4a72-85b4-64fbe3ace08e` _chave aleatoria_ **NuBank 💜**
 
 ## Analise 
-- _as entradas são feitas por condições definidas na analise;_
-- _essa analise não é 100% eficaz, desenvolva sua própria análise caso queira melhores resultados;_
-- alterações de analise podem ser feitas no arquivo [`analise.mjs`](https://github.com/elizandrodantas/bot-blaze-telegram/blob/main/src/core/analise.mjs).
+- _essa anialise não é 100% eficaz, personalize sua própria análise caso queira melhores resultados;_
+- arquivo de analise [`analise.mjs`](https://github.com/elizandrodantas/bot-blaze-telegram/blob/main/src/core/analise.mjs).
 
 <p align="right"><a href="#topo">topo</a></p>
 
-## Novidades (v0.1.37)
+## Novidades (v1.0.0)
 
-* Correção de bugs:
-    - Travamento da blaze;
-    - Tempo no loss;
-    - Mensagem estática de gale.
+* Adicionado opção de analise personalizada
 
 <p align="right"><a href="#topo">topo</a></p>
 
@@ -43,29 +39,29 @@ O objetivo deste bot é enviar, após uma [analise](#analise), sinais do resulta
 
 <p align="right"><a href="#topo">topo</a></p>
 
-## Instalação
+## Instalação e configurações
 
-1. **Clone o repositório**
+**Clone o repositório**
 ```sh
 git clone https://github.com/elizandrodantas/bot-blaze-telegram
 ```
 
-2. **Instalar as dependencias**
+ou
+
+**Instalar as dependencias**
 - npm
 ```sh
-npm install
+npm install bot-blaze-telegram
 ```
 - yarn
 ```sh
-yarn
+yarn add bot-blaze-telegram
 ```
 
-3. **Variáveis de ambiente `(.env)`**
+**Variáveis de ambiente `(.env)`** (indicada para uso local)
 _dentro do repositorio existe um arquivo de exemplo `(.env.example)`_
 
 ```js
-URL_BLAZE="" // url WS da blaze
-BASE_URL="" // base url do site da blaze
 BOT_TOKEN="" // token do bot telegram
 ID_GROUP_MESSAGE="" // id do grupo/canal/chat do telegram que ira receber os sinais (string)
 ```
@@ -77,7 +73,7 @@ _caso as variaveis não forem encontradas dentro do processo, serão setados em 
 ## Uso
 
 ```javascript
-import { BotBlazeWithTelegram } from './src/index.mjs';
+import { BotBlazeWithTelegram } from 'bot-blaze-telegram';
 
 new BotBlazeWithTelegram(options).run();
 ```
@@ -100,7 +96,20 @@ interface IConstructorClassDad {
     messageEnterBet: ICBCurrentAndRecents;
     messageWin: ICBCurrentAndPlayed;
     messageLoss: ICBCurrentAndPlayed;
-    messageOfGale: ICBCurrentAndPlayedAndGale
+    messageOfGale: ICBCurrentAndPlayedAndGale;
+    analysis?: IAnalysisKitten | IAnalysisKitten[];
+}
+
+interface IColorRoll {
+    color: string | number;
+    roll: number;
+}
+
+interface IAnalysisKitten {
+    search: IColorRoll[];
+    startSearchOf?: number;
+    entryColor?: number | string;
+    entryRoll?: number;
 }
 
 interface IOptionsTimePaused {
@@ -180,6 +189,7 @@ type ICBCurrentAndPlayedAndGale = (currentPlay: IDataBlazeResponse, betplayed: I
 * **IConstructorClassDad.messageWin** _mensagem personalizada quando resultado: WIN_
 * **IConstructorClassDad.messageLoss** _mensagem personalizada quando resultado: LOSS_
 * **IConstructorClassDad.messageOfGale** _mensagem personalizada quando entrar em uma GALE_
+* ***IConstructorClassDad.analysis** _opções de analise personalizada_
 
 ### Todas opões com forma de uso:
 ```js
@@ -275,7 +285,46 @@ type ICBCurrentAndPlayedAndGale = (currentPlay: IDataBlazeResponse, betplayed: I
 
         return `🔸 ENTRAMOS NO ${_getColorNameOrEmoticon(betplayed.color, { emoticon: true })}` +
             `\n🔹 RESULTADO FOI ${_getColorNameOrEmoticon(current.color, { emoticon: true })}`;
+    },
+
+    // Analise personalizada (unitaria)
+    analysis: {
+        search: [
+            { color: "red" },
+            { color: "black" }
+        ],
+        entryColor: "red"
     }
+
+    // Analise personalizada (multiplas)
+    // * primeira analise que encontrar, ele ira entrar
+    analysis: [
+        {
+            search: [
+                { color: "red" },
+                { color: "black" }
+            ],
+            entryColor: "red"
+        },
+        {
+            search: [
+                { color: "black" },
+                { color: "red" },
+                { color: "black" },
+                { color: "red" }
+            ],
+            entryColor: "black"
+        },
+        {
+            search: [
+                { color: "black" },
+                { color: "red" },
+                { color: "red" },
+                { color: "black" }
+            ],
+            entryColor: "red"
+        }
+    ]
 }
 ```
 

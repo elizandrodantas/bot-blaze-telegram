@@ -18,12 +18,12 @@ import { getColorWithRoll, getRollRandomWithColor, transformStringToNumberColor 
 
 /**
 * 
-* @typedef {object} IResponseLastAnalise
-* @property { "error" | "success" } status
-* @property { import("./blaze.mjs").IDataBlazeResponse } last
-* @property { boolean } verify
-* @property {{ color: number, roll: number }} entry
-* @property { import("./blaze.mjs").IDataBlazeResponse } recents
+* @typedef { object } IAnalysisResponse
+* @property { "error" | "success" } status - falha ou sucesso
+* @property { IColorOrRoll } last - ultima rodada do gamer
+* @property { boolean } entry - responsta da analise de entrada/não entrada
+* @property { import("./blaze.mjs").IDataBlazeResponse[] } recents - recentes jogadas do gamer
+* @property { IColorOrRoll } play - qual cor ou numero de rodada deve entrar (caso a analise for verdadeira)
 */
 
 /**
@@ -49,7 +49,7 @@ export class Analise {
     /**
      * 
      * @param {import("./blaze.mjs").IDataBlazeResponse[]} recents 
-     * @returns {IResponseLastAnalise}
+     * @returns {IAnalysisResponse}
      */
 
     static withLast(recents){
@@ -58,20 +58,29 @@ export class Analise {
 
         return {
             status: 'success',
-            last: lastAccept,
+            last: recents[0],
             recents: recents,
+            play: lastAccept,
             entry: rule.includes(lastAccept.roll)
         }
     }
 
     /**
+     * processo conjunto da analise
      * 
      * @param {IAnalysisKitten[] | IAnalysisKitten} analysis
-     * @return {{ status: 'fail' | 'success', message: string, entry: boolean }}
+     * @return {IAnalysisResponse}
      */
 
     process(analysis){
         let output;
+
+        if(isObject(analysis)){
+            let data = this.proccessOfAnalysis(analysis);
+
+            if(data.status === "success" && data.entry === true)
+                output = data;
+        }
 
         if(isArray(analysis)){
             for(let i of analysis){
@@ -83,19 +92,18 @@ export class Analise {
                 }
             }
 
-        }
+            if(!output)
+                output = {
+                    status: "success",
+                    entry: false
+                }
 
-        if(isObject(analysis)){
-            let data = this.proccessOfAnalysis(analysis);
-
-            if(data.status === "success" && data.entry === true)
-                output = data;
         }
 
         if(!output)
-            output = {
-                status: "success",
-                entry: false
+            return {
+                status: 'fail',
+                message: 'nenhum gatilho encontrado'
             }
         
         return output
@@ -103,9 +111,10 @@ export class Analise {
     
 
     /**
+     * processo unitario da analise
      * 
      * @param {IAnalysisKitten} analysis
-     * @return {{ status: string, message: string, last: IColorOrRoll, recents: import("./blaze.mjs").IDataBlazeResponse[], entry: boolean }}
+     * @return {IAnalysisResponse}
      */
 
     proccessOfAnalysis(analysis){
@@ -139,12 +148,6 @@ export class Analise {
 
         if(isArray(search))
             entry = this.#searchArrayAnalysis(search, recents.slice(startSearchOf, recents.length));
-    
-        if(!entry)
-            return {
-                status: 'success',
-                entry: false
-            }
 
         const outputLast = this.#treatEntry(entryColor, entryRoll, recents.slice(startSearchOf, recents.length));
 
@@ -156,13 +159,15 @@ export class Analise {
 
         return {
             status: 'success',
-            last: outputLast,
+            last: recents[0],
+            play: outputLast,
             recents,
             entry
         }
     }
 
     /**
+     * trata e verifica as condições da analise
      * 
      * @param {IColorOrRoll[]} array 
      * @param {import("./blaze.mjs").IDataBlazeResponse[]} recents 
@@ -244,6 +249,7 @@ export class Analise {
     }
 
     /**
+     * trata qual cor ou numero da rodada o bot vai entrar
      * 
      * @param {number} entryColor 
      * @param {number} entryRoll 
@@ -252,8 +258,6 @@ export class Analise {
      */
 
     #treatEntry(entryColor, entryRoll, recents){
-        
-
         if(entryColor){
             if(isString(entryColor))
                 entryColor = transformStringToNumberColor(entryColor);

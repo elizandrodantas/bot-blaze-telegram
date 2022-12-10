@@ -25,7 +25,7 @@ let controller = new BotBlazeWithTelegram({
         return "🔎 <b>SINAL ENCONTRADO:</b>\n" +
             `\nENTRE NO ${_getColorNameOrEmoticon(current.color, { emoticon: true })} ${_getColorNameOrEmoticon(current.color, { pt: true, upper: true })}` +
             `\nPROTEJA NO ${_getColorNameOrEmoticon(0, { emoticon: true })} ${_getColorNameOrEmoticon(0, { pt: true, upper: true })}` +
-            `\n\n<pre>https://blaze.com/</pre>`;
+            `\n\n<pre>⚠️ EM DESENVOLVIMENTO ⚠️</pre>`;
     },
     gale: 2,
     analysis: [

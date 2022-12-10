@@ -5,7 +5,6 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
 import { EnvironmentVariablesError } from '../error/index.mjs';
-import { startWith } from '../util/index.mjs';
 
 const __filename = fileURLToPath(import.meta.url),
     __dirname = dirname(__filename);
@@ -36,7 +35,7 @@ export function Telegram(){
     /** @type {"pause" | "on"} */
     this.status = "pause";
     /** @type {Telegraf} */
-    this.client = new Telegraf(process.env.BOT_TOKEN);
+    this.client = new Telegraf(process.env.BOT_TOKEN, {  });
 
     this.messageInfoBot = [
         "🤖 <b>Bot Info:</b> \n",
@@ -47,6 +46,8 @@ export function Telegram(){
         "🔭 Aproveite todos meus serviços nos canais."
     ];
 
+    /** @type {import('telegraf/typings/core/types/typegram.js').UserFromGetMe} */
+    this.bot_info;
 }
 
 /**
@@ -62,7 +63,8 @@ export function Telegram(){
 Telegram.prototype.start = async function(){
     var startingOra = ora('iniciando bot').start();
     try{
-        await this.client.launch();
+        this.bot_info = await this.client.telegram.getMe();
+        this.client.launch({ dropPendingUpdates: true });
         this.status = "on";
         
         startingOra.succeed("bot iniciado com sucesso :)");
