@@ -181,20 +181,21 @@ export class Analise {
         for(let i = 0; i < array.length; i++){
             let { color, roll } = array[i];
 
-            if(color && isString(color))
+
+            if(!isUndefined(color) && isString(color))
                 color = transformStringToNumberColor(color);
 
-            if(color && !isNumber(color))
+            if(!isUndefined(color) && !isNumber(color))
                 color = 3
-            if(roll && !isNumber(roll))
+            if(!isUndefined(roll) && !isNumber(roll))
                 roll = 17;
 
-            if(color && (recents[i]?.color === color)){
+            if(!isUndefined(color) && (recents[i]?.color === color)){
                 if(!roll)
                     k++
             }
 
-            if(roll && (recents[i]?.roll === roll))
+            if(!isUndefined(roll) && (recents[i]?.roll === roll))
                 if(color){
                     if(color && (recents[i]?.color === color)){
                         k++
@@ -202,6 +203,7 @@ export class Analise {
                 }else{
                     k++
                 }
+            console.log(color, roll)
                 
         }
 
