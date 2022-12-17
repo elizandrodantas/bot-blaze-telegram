@@ -203,8 +203,6 @@ export class Analise {
                 }else{
                     k++
                 }
-            console.log(color, roll)
-                
         }
 
         if(k === array.length)
