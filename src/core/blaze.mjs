@@ -164,6 +164,26 @@ BlazeCore.prototype.start = function(){
     };
 }
 
+BlazeCore.prototype.verfy = async function(){
+    try{
+        const {  status  } = await this.recents();
+
+        if(!status){
+            throw 'nil';
+        }
+
+        return {
+            status: true,
+            message: null
+        }
+    }catch(_){
+        return {
+            status: false,
+            message: _?.message || "nil"
+        }
+    }
+}
+
 /**
  * ### responsavel de obter os jogos mais recentes
  * 

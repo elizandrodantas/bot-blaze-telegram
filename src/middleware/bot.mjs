@@ -256,6 +256,12 @@ BotBlazeWithTelegram.prototype.run = async function(){
     this.blaze.start({ type: "doubles" });
     await this.telegram.start();
 
+    const { status } = await this.blaze.verfy();
+
+    if(!status){
+        throw new Error("no admin permission (blaze");
+    }
+
     this.blaze.ev.on("game_waiting" , (data) => {
         console.log(chalk.cyan(`[${new Date().toLocaleString()}]`), chalk.yellow('status:'), 'players betting');
         this._summary({ verifyDate: true });

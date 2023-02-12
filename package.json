@@ -1,6 +1,6 @@
 {
   "name": "bot-blaze-telegram",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "esse bot envia sinais, do gamer double blaze, direto para chats do telegram.",
   "author": "Elizandro Dantas <dantaspm@icloud.com>",
   "main": "src/index.mjs",
