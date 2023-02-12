@@ -58,16 +58,6 @@ npm install bot-blaze-telegram
 yarn add bot-blaze-telegram
 ```
 
-**Variáveis de ambiente `(.env)`** (indicada para uso local)
-_dentro do repositorio existe um arquivo de exemplo `(.env.example)`_
-
-```js
-BOT_TOKEN="" // token do bot telegram
-ID_GROUP_MESSAGE="" // id do grupo/canal/chat do telegram que ira receber os sinais (string)
-```
-
-_caso as variaveis não forem encontradas dentro do processo, serão setados em forma de input no console_ **(>= v0.1.1\*)**
-
 <p align="right"><a href="#topo">topo</a></p>
 
 ## Uso
