@@ -30,36 +30,11 @@ let controller = new BotBlazeWithTelegram({
     gale: 2,
     analysis: [
         {
-            entryColor: "white",
-            search: [
-                {
-                    color: "white"
-                }
-            ]
-        },
-        {
             entryColor: "black",
             search: [
-                { color: "red" },
                 { color: "black" },
-                { color: "red" },
                 { color: "black" },
-            ]
-        },
-        {
-            entryColor: "red",
-            search: [
-                { color: "black" },
-                { color: "red" },
-                { color: "red" },
-                { color: "black" },
-            ]
-        },
-        {
-            entryColor: "red",
-            search: [
-                { color: "red" },
-                { color: "black" },
+                { color: "red" }
             ]
         }
     ]

@@ -1,4 +1,5 @@
 import event from 'node:events';
+import chalk from 'chalk';
 import ws from 'ws';
 import request from 'request-promise';
 import { createHash, createHmac } from 'node:crypto';
@@ -133,6 +134,11 @@ BlazeCore.prototype.start = function(){
 
     wss.on('message', (data) => {
         this.onMessage(data, this.ev);
+    });
+
+    wss.on('error', (err) => {
+        console.log(chalk.red('[!]'), "error connection ws:", chalk.yellow(err?.message || "unknown"));
+        console.log(chalk.yellow('[!]'), "waiting next connection");
     });
 
     wss.on('close', (code, reason) => {
